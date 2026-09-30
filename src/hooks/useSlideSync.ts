@@ -3,16 +3,12 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 const CHANNEL_NAME = 'ww2_presentation_sync_channel';
 const STORAGE_KEY = 'ww2_current_slide_index';
 const SYNC_ENDPOINT = '/api/sync';
+const COMMAND_ENDPOINT = '/api/command';
 
 interface SyncMessage {
   type: 'SLIDE_CHANGE' | 'REQUEST_SYNC' | 'SYNC_STATE';
   index: number;
   sourceId: string;
-}
-
-export interface SlideSyncOptions {
-  isPresenterNotes?: boolean;
-  autoFollow?: boolean;
 }
 
 function getInitialSlideIndex(defaultIndex: number): number {
@@ -60,14 +56,8 @@ function getInitialSlideIndex(defaultIndex: number): number {
 
 export function useSlideSync(
   initialIndex: number = 0,
-  onRemoteChange?: (index: number) => void,
-  options?: SlideSyncOptions
+  onRemoteChange?: (index: number) => void
 ) {
-  const isPresenterNotes = options?.isPresenterNotes ?? false;
-  const autoFollow = options?.autoFollow ?? false;
-  const autoFollowRef = useRef(autoFollow);
-  autoFollowRef.current = autoFollow;
-
   const sourceIdRef = useRef<string>(
     typeof crypto !== 'undefined' && 'randomUUID' in crypto
       ? crypto.randomUUID()
@@ -77,22 +67,14 @@ export function useSlideSync(
   const currentIndexRef = useRef<number>(initialIndex);
   const onRemoteChangeRef = useRef(onRemoteChange);
   const serverRevisionRef = useRef<number>(-1);
-  const initialSyncedRef = useRef<boolean>(false);
 
   const [currentIndex, setCurrentIndex] = useState<number>(() => {
     return getInitialSlideIndex(initialIndex);
   });
 
-  const [desktopIndex, setDesktopIndex] = useState<number>(currentIndex);
-  const desktopIndexRef = useRef<number>(currentIndex);
-
   useEffect(() => {
     currentIndexRef.current = currentIndex;
   }, [currentIndex]);
-
-  useEffect(() => {
-    desktopIndexRef.current = desktopIndex;
-  }, [desktopIndex]);
 
   useEffect(() => {
     onRemoteChangeRef.current = onRemoteChange;
@@ -101,28 +83,12 @@ export function useSlideSync(
   const broadcastChange = useCallback((newIndex: number) => {
     setCurrentIndex(newIndex);
     currentIndexRef.current = newIndex;
-    setDesktopIndex(newIndex);
-    desktopIndexRef.current = newIndex;
 
     try {
       localStorage.setItem(STORAGE_KEY, newIndex.toString());
     } catch {}
 
-    fetch(SYNC_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ index: newIndex }),
-    })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data: { revision?: number } | null) => {
-        if (data && Number.isFinite(data.revision)) {
-          serverRevisionRef.current = Number(data.revision);
-        }
-      })
-      .catch(() => {
-        // Preview builds or offline fallback
-      });
-
+    // 1. BroadcastChannel: Instant (<1ms) synchronization between open tabs/windows
     if (channelRef.current) {
       try {
         channelRef.current.postMessage({
@@ -134,8 +100,30 @@ export function useSlideSync(
         console.error('BroadcastChannel error:', err);
       }
     }
+
+    // 2. Network sync endpoint for remote / mobile devices
+    fetch(SYNC_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ index: newIndex }),
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data: { revision?: number } | null) => {
+        if (data && Number.isFinite(data.revision)) {
+          serverRevisionRef.current = Number(data.revision);
+        }
+      })
+      .catch(() => {});
+
+    // 3. Command endpoint backup
+    fetch(COMMAND_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'goto', index: newIndex }),
+    }).catch(() => {});
   }, []);
 
+  // Set up BroadcastChannel and localStorage listeners for instant cross-window sync
   useEffect(() => {
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
       const channel = new BroadcastChannel(CHANNEL_NAME);
@@ -146,17 +134,14 @@ export function useSlideSync(
         if (!data || data.sourceId === sourceIdRef.current) return;
 
         if (data && (data.type === 'SLIDE_CHANGE' || data.type === 'SYNC_STATE')) {
-          setDesktopIndex(data.index);
-          desktopIndexRef.current = data.index;
-
-          // If not in presenter notes mode, or auto-follow is active, adopt the change
-          if (!isPresenterNotes || autoFollowRef.current) {
-            setCurrentIndex(data.index);
-            currentIndexRef.current = data.index;
+          const nextIndex = data.index;
+          if (nextIndex !== currentIndexRef.current) {
+            setCurrentIndex(nextIndex);
+            currentIndexRef.current = nextIndex;
             try {
-              localStorage.setItem(STORAGE_KEY, data.index.toString());
+              localStorage.setItem(STORAGE_KEY, nextIndex.toString());
             } catch {}
-            onRemoteChangeRef.current?.(data.index);
+            onRemoteChangeRef.current?.(nextIndex);
           }
         } else if (data && data.type === 'REQUEST_SYNC') {
           channel.postMessage({
@@ -177,17 +162,10 @@ export function useSlideSync(
     const handleStorage = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY && e.newValue !== null) {
         const newIdx = parseInt(e.newValue, 10);
-        if (Number.isFinite(newIdx)) {
-          setDesktopIndex(newIdx);
-          desktopIndexRef.current = newIdx;
-
-          if (!isPresenterNotes || autoFollowRef.current) {
-            if (newIdx !== currentIndexRef.current) {
-              setCurrentIndex(newIdx);
-              currentIndexRef.current = newIdx;
-              onRemoteChangeRef.current?.(newIdx);
-            }
-          }
+        if (Number.isFinite(newIdx) && newIdx !== currentIndexRef.current) {
+          setCurrentIndex(newIdx);
+          currentIndexRef.current = newIdx;
+          onRemoteChangeRef.current?.(newIdx);
         }
       }
     };
@@ -199,8 +177,9 @@ export function useSlideSync(
       channelRef.current = null;
       window.removeEventListener('storage', handleStorage);
     };
-  }, [isPresenterNotes]);
+  }, []);
 
+  // Initial server sync on mount + network polling for mobile / cross-device
   useEffect(() => {
     const isNotesUrl = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mode') === 'notes';
     const hasUrlSlide = typeof window !== 'undefined' && (
@@ -208,7 +187,7 @@ export function useSlideSync(
       new URLSearchParams(window.location.search).has('index')
     );
 
-    // Initial mount sync
+    // Initial mount sync: Connect to server state
     fetch(SYNC_ENDPOINT)
       .then((response) => (response.ok ? response.json() : null))
       .then((data: { index?: number; revision?: number } | null) => {
@@ -217,35 +196,28 @@ export function useSlideSync(
         const revision = Number(data.revision);
         const serverIndex = Number(data.index);
         serverRevisionRef.current = revision;
-        setDesktopIndex(serverIndex);
-        desktopIndexRef.current = serverIndex;
 
         if (hasUrlSlide) {
           // If URL explicitly had a slide param, broadcast that to server
           broadcastChange(currentIndexRef.current);
-          initialSyncedRef.current = true;
-        } else if (isNotesUrl || isPresenterNotes) {
-          // On initial connection in notes mode: align with active server slide
-          if (!initialSyncedRef.current) {
-            initialSyncedRef.current = true;
-            if (serverIndex !== currentIndexRef.current) {
-              setCurrentIndex(serverIndex);
-              currentIndexRef.current = serverIndex;
-              try {
-                localStorage.setItem(STORAGE_KEY, serverIndex.toString());
-              } catch {}
-              onRemoteChangeRef.current?.(serverIndex);
-            }
+        } else if (isNotesUrl) {
+          // Presenter console opened without URL slide param: adopt active presentation slide
+          if (serverIndex !== currentIndexRef.current) {
+            setCurrentIndex(serverIndex);
+            currentIndexRef.current = serverIndex;
+            try {
+              localStorage.setItem(STORAGE_KEY, serverIndex.toString());
+            } catch {}
+            onRemoteChangeRef.current?.(serverIndex);
           }
         } else {
           // Main presentation deck: initialize server with current deck index
           broadcastChange(currentIndexRef.current);
-          initialSyncedRef.current = true;
         }
       })
       .catch(() => {});
 
-    // Polling interval for updates from remote / server
+    // Polling interval for updates from remote / server (every 300ms)
     const interval = window.setInterval(() => {
       fetch(SYNC_ENDPOINT)
         .then((response) => (response.ok ? response.json() : null))
@@ -255,36 +227,27 @@ export function useSlideSync(
           const revision = Number(data.revision);
           const nextIndex = Number(data.index);
 
-          // If revision hasn't changed, nothing new from server
+          // If revision hasn't changed, ignore
           if (revision === serverRevisionRef.current) return;
 
           serverRevisionRef.current = revision;
-          setDesktopIndex(nextIndex);
-          desktopIndexRef.current = nextIndex;
-
-          // For presenter notes: only auto-jump if autoFollow is enabled
-          if (!isPresenterNotes || autoFollowRef.current) {
-            if (nextIndex !== currentIndexRef.current) {
-              setCurrentIndex(nextIndex);
-              currentIndexRef.current = nextIndex;
-              try {
-                localStorage.setItem(STORAGE_KEY, nextIndex.toString());
-              } catch {}
-              onRemoteChangeRef.current?.(nextIndex);
-            }
+          if (nextIndex !== currentIndexRef.current) {
+            setCurrentIndex(nextIndex);
+            currentIndexRef.current = nextIndex;
+            try {
+              localStorage.setItem(STORAGE_KEY, nextIndex.toString());
+            } catch {}
+            onRemoteChangeRef.current?.(nextIndex);
           }
         })
         .catch(() => {});
-    }, 400);
+    }, 300);
 
     return () => window.clearInterval(interval);
-  }, [broadcastChange, isPresenterNotes]);
+  }, [broadcastChange]);
 
   return {
     currentIndex,
     setCurrentIndex: broadcastChange,
-    desktopIndex,
-    isSynced: currentIndex === desktopIndex,
-    syncToDesktop: () => broadcastChange(desktopIndexRef.current),
   };
 }

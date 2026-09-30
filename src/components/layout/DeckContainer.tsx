@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { slidesData } from '../../data/slidesData';
 import { useSlideSync } from '../../hooks/useSlideSync';
@@ -22,13 +22,27 @@ export const DeckContainer: React.FC = () => {
   const [slide2RevealStep, setSlide2RevealStep] = useState<number>(0);
   const commandRevisionRef = useRef<number>(0);
   const commandReadyRef = useRef<boolean>(false);
+  const currentIndexRef = useRef<number>(0);
 
-  const { currentIndex, setCurrentIndex } = useSlideSync(0, (index) => {
-    if (index > 0) {
+  const onRemoteSlideChange = useCallback((newIndex: number) => {
+    setIsIntroExiting(false);
+    if (newIndex > 0) {
       setIsIntroUnlocked(true);
-      localStorage.setItem('ww2_intro_complete', 'true');
+      try {
+        localStorage.setItem('ww2_intro_complete', 'true');
+      } catch {}
     }
-  });
+    setDirection(newIndex > currentIndexRef.current ? 1 : -1);
+    if (slidesData[newIndex]?.id !== 2) {
+      setSlide2RevealStep(0);
+    }
+  }, []);
+
+  const { currentIndex, setCurrentIndex } = useSlideSync(0, onRemoteSlideChange);
+
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
+  }, [currentIndex]);
 
   const totalSlides = slidesData.length;
   const currentSlide = slidesData[currentIndex];
@@ -138,10 +152,12 @@ export const DeckContainer: React.FC = () => {
           if (revision === commandRevisionRef.current) return;
 
           commandRevisionRef.current = revision;
-          if (data.action === 'next') handleNext();
-          if (data.action === 'prev') handlePrev();
           if (data.action === 'goto' && typeof data.index === 'number') {
             handleSelectSlide(data.index);
+          } else if (data.action === 'next') {
+            handleNext();
+          } else if (data.action === 'prev') {
+            handlePrev();
           }
         })
         .catch(() => {});
