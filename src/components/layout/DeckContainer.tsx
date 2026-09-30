@@ -13,6 +13,7 @@ import { ArchivalVideoOverlay } from '../common/ArchivalVideoOverlay';
 
 export const DeckContainer: React.FC = () => {
   const deckRef = useRef<HTMLDivElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [direction, setDirection] = useState<number>(0);
   const [showNotes, setShowNotes] = useState<boolean>(false);
   const [showOverview, setShowOverview] = useState<boolean>(false);
@@ -50,6 +51,35 @@ export const DeckContainer: React.FC = () => {
 
   useEffect(() => {
     currentIndexRef.current = currentIndex;
+  }, [currentIndex]);
+
+  // Background memorial music: Starts at Slide 17 (index 16) and plays continuously to the end
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (currentIndex >= 16) {
+      audio.volume = 0.35; // Nhạc nền vừa đủ, không quá to
+      if (audio.paused) {
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            const handleUserInteraction = () => {
+              audio.play().catch(() => {});
+              window.removeEventListener('click', handleUserInteraction);
+              window.removeEventListener('keydown', handleUserInteraction);
+            };
+            window.addEventListener('click', handleUserInteraction);
+            window.addEventListener('keydown', handleUserInteraction);
+          });
+        }
+      }
+    } else {
+      if (!audio.paused) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+    }
   }, [currentIndex]);
 
   const totalSlides = slidesData.length;
@@ -310,7 +340,6 @@ export const DeckContainer: React.FC = () => {
           isOpen={isCinematicVideoActive}
           video={currentSlide.cinematicVideo}
           onClose={handlePrev}
-          onNext={handleNext}
         />
       </div>
 
@@ -321,6 +350,14 @@ export const DeckContainer: React.FC = () => {
         slides={slidesData}
         currentIndex={currentIndex}
         onSelectSlide={handleSelectSlide}
+      />
+
+      {/* Background Memorial Audio from Slide 17 to End */}
+      <audio
+        ref={audioRef}
+        src="/assets/audio/memorial-bg.mp3"
+        loop
+        preload="auto"
       />
     </motion.div>
   );

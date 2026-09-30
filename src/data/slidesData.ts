@@ -7,17 +7,17 @@ const pearlHarborGallery = [
     source: "U.S. Navy / Public Domain"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Aerial%20view%20of%20Pearl%20Harbor%20Navy%20Yard%20and%20Ford%20Island%20on%2026%20November%201941.jpg",
+    url: "/assets/history/ph-aerial-view-ford-island.webp",
     caption: "Pearl Harbor Navy Yard and Ford Island before the attack.",
     source: "U.S. Navy / Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Overhead%20view%20of%20Ford%20Island%20in%201941.jpg",
+    url: "/assets/history/ph-overhead-ford-island.webp",
     caption: "Ford Island in 1941, before the illusion of safety was broken.",
     source: "U.S. Navy / Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Pearl%20Harbor%20torpedo%20attack%20Japanese%20aerial.jpg",
+    url: "/assets/history/ph-torpedo-attack-japanese.webp",
     caption: "Aerial view from a Japanese aircraft during the opening attack.",
     source: "Imperial Japanese Navy / Public Domain"
   },
@@ -27,7 +27,7 @@ const pearlHarborGallery = [
     source: "U.S. Navy / Public Domain"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Burning%20ships%20at%20Pearl%20Harbor.jpg",
+    url: "/assets/history/ph-burning-ships.webp",
     caption: "Burning ships at Pearl Harbor after the strike.",
     source: "U.S. Navy / Public Domain"
   }
@@ -35,49 +35,44 @@ const pearlHarborGallery = [
 
 const stalingradGallery = [
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Bundesarchiv%20Bild%20183-J17815%2C%20Russland%2C%20Kampf%20um%20Stalingrad%2C%20Luftangriff.jpg",
+    url: "/assets/history/stalingrad-air-attack.webp",
     caption: "Aerial view of Stalingrad after a German air attack.",
     source: "Bundesarchiv / Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Pavlov%27s%20House.jpg",
+    url: "/assets/history/stalingrad-pavlov-house.webp",
     caption: "Pavlov's House, the apartment fortress held for weeks.",
     source: "Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Stalingrad%20infantry.jpg",
+    url: "/assets/history/stalingrad-infantry.webp",
     caption: "Soviet infantry attacking German positions in Stalingrad.",
     source: "RIA Novosti / Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/RIAN%20archive%20602770%20Battle%20of%20Stalingrad.jpg",
+    url: "/assets/history/stalingrad-street-fight.webp",
     caption: "Soviet soldiers during a street fight in Stalingrad.",
     source: "RIA Novosti / Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Bundesarchiv%20Bild%20183-B22478%2C%20Stalingrad%2C%20Luftwaffen-Soldaten%20in%20Ruinen.jpg",
+    url: "/assets/history/stalingrad-luftwaffe-ruins.webp",
     caption: "Soldiers moving through ruins in Stalingrad.",
     source: "Bundesarchiv / Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/RIAN%20archive%2044732%20Soviet%20soldiers%20attack%20house.jpg",
+    url: "/assets/history/stalingrad-soldiers-attack-house.webp",
     caption: "Soviet soldiers attacking through urban ruins.",
     source: "RIA Novosti / Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/RIAN%20archive%20137429%20Stalingrad%20soldiers%20during%20short%20lull.jpg",
+    url: "/assets/history/stalingrad-soldiers-lull.webp",
     caption: "Soviet soldiers during a short lull in the fighting.",
     source: "RIA Novosti / Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/RIAN%20archive%2061150%20Great%20Patriotic%20War.jpg",
+    url: "/assets/history/stalingrad-great-patriotic-war.webp",
     caption: "A lull on the frontline during the Stalingrad battle.",
     source: "RIA Novosti / Wikimedia Commons"
-  },
-  {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Volgograd%20Mill%20Gerhardt.jpg",
-    caption: "Gerhardt's Mill, a surviving scar of the battle.",
-    source: "Wikimedia Commons"
   }
 ];
 
@@ -88,75 +83,60 @@ const normandyGallery = [
     source: "U.S. Coast Guard / Public Domain"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/D-day%20Normandy%20Nara%2026-G-2343.jpg",
+    url: "/assets/history/normandy-dday-wade-ashore.webp",
     caption: "U.S. Army troops wade ashore on Omaha Beach.",
     source: "NARA / Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/NormandySupply%20edit.jpg",
+    url: "/assets/history/normandy-supply-armada.webp",
     caption: "Allied invasion armada and barrage balloons over Normandy.",
     source: "U.S. National Archives / Public Domain"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Omaha%20Beach%201944.jpg",
-    caption: "Allied reinforcements and vehicles on Omaha Beach.",
-    source: "U.S. Army Signal Corps"
-  },
-  {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/2nd%20Infantry%20Division%2C%20E-1%20draw%2C%20Easy%20Red%20sector%2C%20Omaha%20Beach%2C%20D%2B1%2C%20June%207%2C%201944.jpg",
+    url: "/assets/history/normandy-2nd-infantry-bluffs.webp",
     caption: "U.S. troops climb the bluffs beyond Omaha Beach.",
     source: "U.S. Army / Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/General%20Dwight%20D.%20Eisenhower%20addresses%20American%20paratroopers%20on%20D-Day.jpg",
+    url: "/assets/history/normandy-eisenhower-paratroopers.webp",
     caption: "Eisenhower speaks with airborne troops before D-Day.",
     source: "U.S. National Archives / Public Domain"
-  },
-  {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/101st%20Airborne%20Division%20pathfinders%20before%20D-Day.jpg",
-    caption: "Airborne troops preparing for the Normandy jump.",
-    source: "U.S. Army / Wikimedia Commons"
-  },
-  {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/US%20soldiers%20march%20through%20Carentan.jpg",
-    caption: "American soldiers moving through Normandy after the landings.",
-    source: "U.S. Army / Wikimedia Commons"
   }
 ];
 
 const berlinGallery = [
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/BM-13-Katjuscha_Berlin.JPG",
+    url: "/assets/history/berlin-katyusha-launcher.webp",
     caption: "A BM-13 Katyusha rocket launcher preserved in Berlin.",
     source: "Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Raising_a_flag_over_the_Reichstag_-_Restoration.jpg",
+    url: "/assets/history/berlin-reichstag-flag-restoration.webp",
     caption: "Raising a Flag over the Reichstag, May 1945.",
     source: "Yevgeny Khaldei / Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Ruins%20of%20the%20Reichstag%20in%20Berlin%2C%203%20June%201945.%20BU8573.jpg",
+    url: "/assets/history/berlin-reichstag-ruins.webp",
     caption: "The damaged Reichstag after the battle for Berlin.",
     source: "Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Bundesarchiv_B_145_Bild-P054320%2C_Berlin%2C_Brandenburger_Tor_und_Pariser_Platz.jpg",
+    url: "/assets/history/berlin-brandenburg-gate.webp",
     caption: "Brandenburg Gate and Pariser Platz after Berlin's fall.",
     source: "Bundesarchiv / Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Bundesarchiv_Bild_183-E0406-0022-012%2C_Sowjetische_Artillerie_vor_Berlin.jpg",
+    url: "/assets/history/berlin-soviet-artillery.webp",
     caption: "Soviet artillery moving toward Berlin.",
     source: "Bundesarchiv / Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Reichstag_flag.jpg",
+    url: "/assets/history/berlin-reichstag-flag-close.webp",
     caption: "A closer Reichstag flag image from the final days of the battle.",
     source: "Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Soviet_War_Memorial_Field_Artillery_%2828151645503%29.jpg",
+    url: "/assets/history/berlin-memorial-artillery.webp",
     caption: "Soviet field artillery memorialized in Berlin.",
     source: "Wikimedia Commons"
   }
@@ -169,22 +149,22 @@ const pacificSledgeGallery = [
     source: "U.S. Marine Corps / Archival Record"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/USS%20Yorktown%20%28CV-5%29%20is%20hit%20by%20a%20torpedo%20on%204%20June%201942.jpg",
+    url: "/assets/history/pacific-uss-yorktown-hit.webp",
     caption: "Battle of Midway: USS Yorktown (CV-5) struck on the port side by an aerial torpedo, June 4, 1942.",
     source: "U.S. Navy / Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Japanese%20aircraft%20carrier%20Hiryu%20adrift%20and%20burning%20on%205%20June%201942%20%28NH%2073065%29.jpg",
+    url: "/assets/history/pacific-hiryu-burning.webp",
     caption: "Battle of Midway: Japanese fleet carrier Hiryū burning and abandoned after U.S. dive-bomber attacks, June 5, 1942.",
     source: "U.S. Navy / Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Japanese%20heavy%20cruiser%20Mikuma%20sinking%20on%206%20June%201942%20%2880-G-414422%29.jpg",
+    url: "/assets/history/pacific-mikuma-sinking.webp",
     caption: "Battle of Midway: Japanese heavy cruiser Mikuma heavily bombed and sinking, June 6, 1942.",
     source: "U.S. Navy / Wikimedia Commons"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Douglas%20TBD-1%20Devastators%20of%20VT-6%20are%20spotted%20for%20launch%20aboard%20USS%20Enterprise%20%28CV-6%29%20on%204%20June%201942%20%2880-G-41686%29.jpg",
+    url: "/assets/history/pacific-devastators-enterprise.webp",
     caption: "Battle of Midway: Douglas TBD-1 Devastators of VT-6 spotted on USS Enterprise (CV-6) before launching strikes.",
     source: "U.S. Navy / Wikimedia Commons"
   },
@@ -194,7 +174,7 @@ const pacificSledgeGallery = [
     source: "U.S. Marine Corps / Public Domain"
   },
   {
-    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Explosion%20of%20the%20Japanese%20battleship%20Yamato%20on%207%20April%201945%20%2880-G-413914%29.jpg",
+    url: "/assets/history/pacific-yamato-explosion.webp",
     caption: "Pacific Theater: Giant Japanese battleship Yamato explodes during Operation Ten-Go, April 7, 1945.",
     source: "U.S. Navy / Wikimedia Commons"
   }
@@ -449,11 +429,6 @@ And on the Eastern Front, I watched Enemy at the Gates, starring Jude Law. He pl
           "Wartime diaries written by soldiers and commanders."
         ]
       }
-    },
-    media: {
-      url: "/assets/history/slide6-szpilman.jpg",
-      caption: "Primary archives & soldier memoirs: Władysław Szpilman surviving occupied Warsaw and the horrors of the Holocaust.",
-      source: "Archival Record / Polskie Radio"
     },
     speakerNote: {
       timing: "05:00 – 06:00",
@@ -893,6 +868,12 @@ At the exact same time, inland behind the beaches, the brave paratroopers of Eas
 
 What I admire most here is the bravery of regular people. These soldiers were not superheroes with special powers. They were school teachers, young farmers, and store clerks. They were just as afraid as anyone in this room would be. But they did not run away. They moved forward through the water. Seeing D-Day would show me what real selflessness means.`,
       keyVocabulary: ["Higgins boat", "Easy Company", "Not superheroes", "Just as afraid as anyone"]
+    },
+    cinematicVideo: {
+      src: "/normandy.mp4",
+      title: "NORMANDY LANDINGS: OPERATION OVERLORD (06:30 AM, JUNE 6, 1944)",
+      badge: "DECLASSIFIED ALLIED COMBAT ARCHIVE",
+      caption: "Allied amphibious assault forces hitting Omaha Beach under brutal coastal defense fire."
     }
   },
   {
@@ -1033,11 +1014,6 @@ Seeing Berlin in May 1945 reminds us that real war does not end with happy music
           "It left behind an empty chair at home and a family crying forever."
         ]
       }
-    },
-    media: {
-      url: "/assets/history/slide17-normandy-crosses.webp",
-      caption: "Endless rows of crosses at Normandy: each representing an irreplaceable human life.",
-      source: "U.S. Army Europe / Public Domain"
     },
     speakerNote: {
       timing: "16:00 – 17:00",

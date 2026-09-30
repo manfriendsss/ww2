@@ -6,9 +6,6 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   server: {
     host: '0.0.0.0',
-    watch: {
-      ignored: ['**/*.mp4', '**/dist/**'],
-    },
   },
   plugins: [react(), tailwindcss()],
 });

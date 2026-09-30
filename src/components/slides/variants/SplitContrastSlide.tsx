@@ -20,7 +20,7 @@ export const SplitContrastSlide: React.FC<SplitContrastSlideProps> = ({ slide, p
         caption: 'Ancient Egypt: The Great Pyramids of Giza',
       },
       {
-        url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Florence%20Cathedral%20%28Duomo%29.jpg',
+        url: '/assets/history/slide2-duomo.webp',
         caption: 'Renaissance Florence: art, science, and human imagination',
       },
       {
@@ -217,17 +217,21 @@ export const SplitContrastSlide: React.FC<SplitContrastSlideProps> = ({ slide, p
     );
   }
 
+  const hasMedia = Boolean(slide.media);
+
   return (
     <div className="flex flex-col justify-center h-full my-auto space-y-5 max-w-7xl mx-auto w-full">
       {/* 2-Column Split Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 items-stretch">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 items-stretch min-h-0">
         {/* Left Column: Golden / Simulation */}
         {leftCol && (
           <motion.div
             initial={{ opacity: 0, x: -25 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="flex flex-col justify-between p-6 rounded bg-[#212622]/90 border-2 border-[#4a544b] shadow-xl relative overflow-hidden"
+            className={`flex flex-col justify-between rounded bg-[#212622]/90 border-2 border-[#4a544b] shadow-xl relative overflow-hidden h-full ${
+              hasMedia ? 'p-6' : 'p-6 lg:p-8'
+            }`}
           >
             <div className="absolute top-0 right-0 w-24 h-24 bg-[#B89C62]/5 rounded-bl-full pointer-events-none" />
             
@@ -238,25 +242,33 @@ export const SplitContrastSlide: React.FC<SplitContrastSlideProps> = ({ slide, p
                   PERSPECTIVE A
                 </span>
               </div>
-              <h3 className="font-heading text-2xl text-[#d4af37] uppercase tracking-wide">
+              <h3 className={`font-heading text-[#d4af37] uppercase tracking-wide ${
+                hasMedia ? 'text-2xl' : 'text-2xl lg:text-3xl'
+              }`}>
                 {leftCol.header}
               </h3>
               {leftCol.subtitle && (
-                <p className="font-typewriter text-xs text-[#a39882] mb-4">
+                <p className={`font-typewriter mb-4 ${
+                  hasMedia ? 'text-xs text-[#a39882]' : 'text-xs lg:text-sm text-[#a39882]'
+                }`}>
                   {leftCol.subtitle}
                 </p>
               )}
 
-              <ul className="space-y-3 mt-4">
+              <ul className={`mt-4 ${hasMedia ? 'space-y-3' : 'space-y-4 lg:space-y-5'}`}>
                 {leftCol.items.map((item, idx) => (
                   <motion.li
                     key={idx}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 + idx * 0.08 }}
-                    className="flex items-start gap-2.5 font-body text-base text-[#d1cbbe] leading-relaxed"
+                    className={`flex items-start font-body leading-relaxed ${
+                      hasMedia ? 'gap-2.5 text-base text-[#d1cbbe]' : 'gap-3 text-lg lg:text-xl text-[#d1cbbe]'
+                    }`}
                   >
-                    <span className="text-[#B89C62] mt-1 shrink-0 font-typewriter">
+                    <span className={`text-[#B89C62] shrink-0 font-typewriter ${
+                      hasMedia ? 'mt-1 text-sm' : 'mt-0.5 text-base lg:text-lg'
+                    }`}>
                       0{idx + 1}.
                     </span>
                     <span>{item}</span>
@@ -265,9 +277,11 @@ export const SplitContrastSlide: React.FC<SplitContrastSlideProps> = ({ slide, p
               </ul>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-[#3D493A]/60 flex items-center justify-between text-xs font-courier text-[#8c978e]">
+            <div className={`mt-4 pt-3 border-t border-[#3D493A]/60 flex items-center justify-between font-courier text-[#8c978e] ${
+              hasMedia ? 'text-xs' : 'text-xs lg:text-sm'
+            }`}>
               <span>ROMANTIC / THEORETICAL</span>
-              <ArrowRight size={14} className="text-[#B89C62]" />
+              <ArrowRight size={hasMedia ? 14 : 16} className="text-[#B89C62]" />
             </div>
           </motion.div>
         )}
@@ -278,9 +292,9 @@ export const SplitContrastSlide: React.FC<SplitContrastSlideProps> = ({ slide, p
             initial={{ opacity: 0, x: 25 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className={`flex flex-col justify-between p-6 rounded bg-[#261f20]/90 border-2 border-[#8B2626] shadow-2xl relative overflow-hidden ${
+            className={`flex flex-col justify-between rounded bg-[#261f20]/90 border-2 border-[#8B2626] shadow-2xl relative overflow-hidden h-full ${
               rightCol.highlight ? 'ring-1 ring-[#8B2626]/50' : ''
-            }`}
+            } ${hasMedia ? 'p-6' : 'p-6 lg:p-8'}`}
           >
             <div className="absolute top-0 right-0 w-24 h-24 bg-[#8B2626]/10 rounded-bl-full pointer-events-none" />
             
@@ -291,34 +305,42 @@ export const SplitContrastSlide: React.FC<SplitContrastSlideProps> = ({ slide, p
                   PERSPECTIVE B // THE CHOSEN REALITY
                 </span>
               </div>
-              <h3 className="font-heading text-2xl text-[#f5f5f0] uppercase tracking-wide">
+              <h3 className={`font-heading text-[#f5f5f0] uppercase tracking-wide ${
+                hasMedia ? 'text-2xl' : 'text-2xl lg:text-3xl'
+              }`}>
                 {rightCol.header}
               </h3>
               {rightCol.subtitle && (
-                <p className="font-typewriter text-xs text-[#c99595] mb-4">
+                <p className={`font-typewriter mb-4 ${
+                  hasMedia ? 'text-xs text-[#c99595]' : 'text-xs lg:text-sm text-[#c99595]'
+                }`}>
                   {rightCol.subtitle}
                 </p>
               )}
 
-              <ul className="space-y-3 mt-4">
+              <ul className={`mt-4 ${hasMedia ? 'space-y-3' : 'space-y-4 lg:space-y-5'}`}>
                 {rightCol.items.map((item, idx) => (
                   <motion.li
                     key={idx}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 + idx * 0.08 }}
-                    className="flex items-start gap-2.5 font-body text-base text-[#f0eee9] leading-relaxed"
+                    className={`flex items-start font-body leading-relaxed ${
+                      hasMedia ? 'gap-2.5 text-base text-[#f0eee9]' : 'gap-3 text-lg lg:text-xl text-[#f0eee9]'
+                    }`}
                   >
-                    <CheckCircle2 size={16} className="text-[#8B2626] mt-1 shrink-0" />
+                    <CheckCircle2 size={hasMedia ? 16 : 19} className="text-[#8B2626] mt-1 shrink-0" />
                     <span className="font-medium">{item}</span>
                   </motion.li>
                 ))}
               </ul>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-[#8B2626]/40 flex items-center justify-between text-xs font-typewriter text-[#e57373]">
-              <span className="flex items-center gap-1">
-                <AlertOctagon size={13} />
+            <div className={`mt-4 pt-3 border-t border-[#8B2626]/40 flex items-center justify-between font-typewriter text-[#e57373] ${
+              hasMedia ? 'text-xs' : 'text-xs lg:text-sm'
+            }`}>
+              <span className="flex items-center gap-1.5">
+                <AlertOctagon size={hasMedia ? 13 : 15} />
                 THE DEFINING CRUCIBLE
               </span>
               <span className="font-courier text-[#B89C62]">TARGET: 1939-1945</span>

@@ -7,14 +7,12 @@ interface ArchivalVideoOverlayProps {
   isOpen: boolean;
   video?: SlideCinematicVideo;
   onClose: () => void;
-  onNext?: () => void;
 }
 
 export const ArchivalVideoOverlay: React.FC<ArchivalVideoOverlayProps> = ({
   isOpen,
   video,
   onClose,
-  onNext,
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -33,9 +31,7 @@ export const ArchivalVideoOverlay: React.FC<ArchivalVideoOverlayProps> = ({
     vid.muted = true;
     const playPromise = vid.play();
     if (playPromise !== undefined) {
-      playPromise.catch((err) => {
-        console.warn('Autoplay error:', err);
-      });
+      playPromise.catch(() => {});
     }
   }, [isOpen, video]);
 
@@ -72,7 +68,7 @@ export const ArchivalVideoOverlay: React.FC<ArchivalVideoOverlayProps> = ({
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#8B2626] animate-pulse" />
                 <span className="font-typewriter text-[#D4AF37] font-bold tracking-wider uppercase text-[11px] sm:text-xs">
-                  {video.badge || 'DECLASSIFIED MILITARY MOTION ARCHIVE // 24 FPS'}
+                  {video.badge || 'DECLASSIFIED MILITARY MOTION ARCHIVE'}
                 </span>
               </div>
 
@@ -120,7 +116,7 @@ export const ArchivalVideoOverlay: React.FC<ArchivalVideoOverlayProps> = ({
             </div>
 
             {/* Footer Information & Controls */}
-            <div className="mt-2.5 pt-2 border-t border-[#3D493A]/60 flex flex-wrap items-center justify-between gap-2">
+            <div className="mt-2.5 pt-2 border-t border-[#3D493A]/60 flex items-center justify-between gap-2">
               <div className="flex-1 min-w-[200px]">
                 <h4 className="font-heading text-sm sm:text-base text-[#D4AF37] uppercase tracking-wide flex items-center gap-1.5">
                   <Film size={15} className="text-[#8B2626] shrink-0" />
@@ -132,15 +128,6 @@ export const ArchivalVideoOverlay: React.FC<ArchivalVideoOverlayProps> = ({
                   </p>
                 )}
               </div>
-
-              {onNext && (
-                <button
-                  onClick={onNext}
-                  className="px-3.5 py-1.5 rounded bg-[#8B2626] hover:bg-[#a32d2d] border border-[#B89C62] text-[#F5F5F0] font-typewriter text-[11px] sm:text-xs tracking-wider uppercase transition-colors shadow-md flex items-center gap-1.5"
-                >
-                  TIẾP TỤC (NEXT) →
-                </button>
-              )}
             </div>
           </motion.div>
         </motion.div>
