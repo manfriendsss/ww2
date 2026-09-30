@@ -1,14 +1,25 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { slidesData } from '../data/slidesData';
 
 const CHANNEL_NAME = 'ww2_presentation_sync_channel';
 const STORAGE_KEY = 'ww2_current_slide_index';
+const STORAGE_STEP_KEY = 'ww2_current_slide_step';
 const SYNC_ENDPOINT = '/api/sync';
 const COMMAND_ENDPOINT = '/api/command';
 
 interface SyncMessage {
   type: 'SLIDE_CHANGE' | 'REQUEST_SYNC' | 'SYNC_STATE';
   index: number;
+  step: number;
   sourceId: string;
+}
+
+export function getMaxStepsForSlide(slideIndex: number): number {
+  const slide = slidesData[slideIndex];
+  if (!slide) return 0;
+  // Slide 2 has id: 2, 4 sub-steps
+  if (slide.id === 2) return 4;
+  return 0;
 }
 
 function getInitialSlideIndex(defaultIndex: number): number {
@@ -54,9 +65,34 @@ function getInitialSlideIndex(defaultIndex: number): number {
   return defaultIndex;
 }
 
+function getInitialSlideStep(slideIndex: number): number {
+  if (typeof window === 'undefined') return 0;
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const stepParam = params.get('step');
+    if (stepParam !== null) {
+      const s = parseInt(stepParam, 10);
+      if (Number.isFinite(s) && s >= 0) {
+        return Math.min(s, getMaxStepsForSlide(slideIndex));
+      }
+    }
+
+    const saved = localStorage.getItem(STORAGE_STEP_KEY);
+    if (saved !== null) {
+      const parsed = parseInt(saved, 10);
+      if (Number.isFinite(parsed) && parsed >= 0) {
+        return Math.min(parsed, getMaxStepsForSlide(slideIndex));
+      }
+    }
+  } catch {}
+
+  return 0;
+}
+
 export function useSlideSync(
   initialIndex: number = 0,
-  onRemoteChange?: (index: number) => void
+  onRemoteChange?: (index: number, step: number) => void
 ) {
   const sourceIdRef = useRef<string>(
     typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -65,6 +101,7 @@ export function useSlideSync(
   );
   const channelRef = useRef<BroadcastChannel | null>(null);
   const currentIndexRef = useRef<number>(initialIndex);
+  const currentStepRef = useRef<number>(0);
   const onRemoteChangeRef = useRef(onRemoteChange);
   const serverRevisionRef = useRef<number>(-1);
 
@@ -72,20 +109,32 @@ export function useSlideSync(
     return getInitialSlideIndex(initialIndex);
   });
 
+  const [currentStep, setCurrentStep] = useState<number>(() => {
+    const initialSlideIdx = getInitialSlideIndex(initialIndex);
+    return getInitialSlideStep(initialSlideIdx);
+  });
+
   useEffect(() => {
     currentIndexRef.current = currentIndex;
   }, [currentIndex]);
 
   useEffect(() => {
+    currentStepRef.current = currentStep;
+  }, [currentStep]);
+
+  useEffect(() => {
     onRemoteChangeRef.current = onRemoteChange;
   }, [onRemoteChange]);
 
-  const broadcastChange = useCallback((newIndex: number) => {
+  const broadcastChange = useCallback((newIndex: number, newStep: number = 0) => {
     setCurrentIndex(newIndex);
+    setCurrentStep(newStep);
     currentIndexRef.current = newIndex;
+    currentStepRef.current = newStep;
 
     try {
       localStorage.setItem(STORAGE_KEY, newIndex.toString());
+      localStorage.setItem(STORAGE_STEP_KEY, newStep.toString());
     } catch {}
 
     // 1. BroadcastChannel: Instant (<1ms) synchronization between open tabs/windows
@@ -94,6 +143,7 @@ export function useSlideSync(
         channelRef.current.postMessage({
           type: 'SLIDE_CHANGE',
           index: newIndex,
+          step: newStep,
           sourceId: sourceIdRef.current,
         } satisfies SyncMessage);
       } catch (err) {
@@ -105,7 +155,7 @@ export function useSlideSync(
     fetch(SYNC_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ index: newIndex }),
+      body: JSON.stringify({ index: newIndex, step: newStep }),
     })
       .then((response) => (response.ok ? response.json() : null))
       .then((data: { revision?: number } | null) => {
@@ -119,9 +169,53 @@ export function useSlideSync(
     fetch(COMMAND_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'goto', index: newIndex }),
+      body: JSON.stringify({ action: 'goto', index: newIndex, step: newStep }),
     }).catch(() => {});
   }, []);
+
+  const handleNext = useCallback(() => {
+    const idx = currentIndexRef.current;
+    const step = currentStepRef.current;
+    const maxSteps = getMaxStepsForSlide(idx);
+
+    if (maxSteps > 0 && step < maxSteps) {
+      const nextStep = step + 1;
+      broadcastChange(idx, nextStep);
+      return;
+    }
+
+    if (idx < slidesData.length - 1) {
+      const nextIndex = idx + 1;
+      broadcastChange(nextIndex, 0);
+    }
+  }, [broadcastChange]);
+
+  const handlePrev = useCallback(() => {
+    const idx = currentIndexRef.current;
+    const step = currentStepRef.current;
+    const maxSteps = getMaxStepsForSlide(idx);
+
+    if (maxSteps > 0 && step > 0) {
+      const prevStep = step - 1;
+      broadcastChange(idx, prevStep);
+      return;
+    }
+
+    if (idx > 0) {
+      const prevIndex = idx - 1;
+      const targetMaxSteps = getMaxStepsForSlide(prevIndex);
+      broadcastChange(prevIndex, targetMaxSteps);
+    }
+  }, [broadcastChange]);
+
+  const handleGoto = useCallback(
+    (targetIndex: number, targetStep: number = 0) => {
+      if (targetIndex >= 0 && targetIndex < slidesData.length) {
+        broadcastChange(targetIndex, targetStep);
+      }
+    },
+    [broadcastChange]
+  );
 
   // Set up BroadcastChannel and localStorage listeners for instant cross-window sync
   useEffect(() => {
@@ -135,18 +229,23 @@ export function useSlideSync(
 
         if (data && (data.type === 'SLIDE_CHANGE' || data.type === 'SYNC_STATE')) {
           const nextIndex = data.index;
-          if (nextIndex !== currentIndexRef.current) {
+          const nextStep = typeof data.step === 'number' && Number.isFinite(data.step) ? data.step : 0;
+          if (nextIndex !== currentIndexRef.current || nextStep !== currentStepRef.current) {
             setCurrentIndex(nextIndex);
+            setCurrentStep(nextStep);
             currentIndexRef.current = nextIndex;
+            currentStepRef.current = nextStep;
             try {
               localStorage.setItem(STORAGE_KEY, nextIndex.toString());
+              localStorage.setItem(STORAGE_STEP_KEY, nextStep.toString());
             } catch {}
-            onRemoteChangeRef.current?.(nextIndex);
+            onRemoteChangeRef.current?.(nextIndex, nextStep);
           }
         } else if (data && data.type === 'REQUEST_SYNC') {
           channel.postMessage({
             type: 'SYNC_STATE',
             index: currentIndexRef.current,
+            step: currentStepRef.current,
             sourceId: sourceIdRef.current,
           } satisfies SyncMessage);
         }
@@ -155,17 +254,23 @@ export function useSlideSync(
       channel.postMessage({
         type: 'REQUEST_SYNC',
         index: currentIndexRef.current,
+        step: currentStepRef.current,
         sourceId: sourceIdRef.current,
       } satisfies SyncMessage);
     }
 
     const handleStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY && e.newValue !== null) {
-        const newIdx = parseInt(e.newValue, 10);
-        if (Number.isFinite(newIdx) && newIdx !== currentIndexRef.current) {
+      if ((e.key === STORAGE_KEY || e.key === STORAGE_STEP_KEY) && e.newValue !== null) {
+        const savedIndex = localStorage.getItem(STORAGE_KEY);
+        const savedStep = localStorage.getItem(STORAGE_STEP_KEY);
+        const newIdx = savedIndex !== null ? parseInt(savedIndex, 10) : currentIndexRef.current;
+        const newStep = savedStep !== null ? parseInt(savedStep, 10) : 0;
+        if (Number.isFinite(newIdx) && (newIdx !== currentIndexRef.current || newStep !== currentStepRef.current)) {
           setCurrentIndex(newIdx);
+          setCurrentStep(newStep);
           currentIndexRef.current = newIdx;
-          onRemoteChangeRef.current?.(newIdx);
+          currentStepRef.current = newStep;
+          onRemoteChangeRef.current?.(newIdx, newStep);
         }
       }
     };
@@ -181,38 +286,45 @@ export function useSlideSync(
 
   // Initial server sync on mount + network polling for mobile / cross-device
   useEffect(() => {
-    const isNotesUrl = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mode') === 'notes';
-    const hasUrlSlide = typeof window !== 'undefined' && (
-      new URLSearchParams(window.location.search).has('slide') || 
-      new URLSearchParams(window.location.search).has('index')
-    );
+    const isNotesUrl =
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('mode') === 'notes';
+    const hasUrlSlide =
+      typeof window !== 'undefined' &&
+      (new URLSearchParams(window.location.search).has('slide') ||
+        new URLSearchParams(window.location.search).has('index'));
 
     // Initial mount sync: Connect to server state
     fetch(SYNC_ENDPOINT)
       .then((response) => (response.ok ? response.json() : null))
-      .then((data: { index?: number; revision?: number } | null) => {
+      .then((data: { index?: number; step?: number; revision?: number } | null) => {
         if (!data || !Number.isFinite(data.index) || !Number.isFinite(data.revision)) return;
 
         const revision = Number(data.revision);
         const serverIndex = Number(data.index);
+        const serverStep =
+          typeof data.step === 'number' && Number.isFinite(data.step) ? Number(data.step) : 0;
         serverRevisionRef.current = revision;
 
         if (hasUrlSlide) {
           // If URL explicitly had a slide param, broadcast that to server
-          broadcastChange(currentIndexRef.current);
+          broadcastChange(currentIndexRef.current, currentStepRef.current);
         } else if (isNotesUrl) {
           // Presenter console opened without URL slide param: adopt active presentation slide
-          if (serverIndex !== currentIndexRef.current) {
+          if (serverIndex !== currentIndexRef.current || serverStep !== currentStepRef.current) {
             setCurrentIndex(serverIndex);
+            setCurrentStep(serverStep);
             currentIndexRef.current = serverIndex;
+            currentStepRef.current = serverStep;
             try {
               localStorage.setItem(STORAGE_KEY, serverIndex.toString());
+              localStorage.setItem(STORAGE_STEP_KEY, serverStep.toString());
             } catch {}
-            onRemoteChangeRef.current?.(serverIndex);
+            onRemoteChangeRef.current?.(serverIndex, serverStep);
           }
         } else {
-          // Main presentation deck: initialize server with current deck index
-          broadcastChange(currentIndexRef.current);
+          // Main presentation deck: initialize server with current deck index and step
+          broadcastChange(currentIndexRef.current, currentStepRef.current);
         }
       })
       .catch(() => {});
@@ -221,23 +333,28 @@ export function useSlideSync(
     const interval = window.setInterval(() => {
       fetch(SYNC_ENDPOINT)
         .then((response) => (response.ok ? response.json() : null))
-        .then((data: { index?: number; revision?: number } | null) => {
+        .then((data: { index?: number; step?: number; revision?: number } | null) => {
           if (!data || !Number.isFinite(data.index) || !Number.isFinite(data.revision)) return;
 
           const revision = Number(data.revision);
           const nextIndex = Number(data.index);
+          const nextStep =
+            typeof data.step === 'number' && Number.isFinite(data.step) ? Number(data.step) : 0;
 
           // If revision hasn't changed, ignore
           if (revision === serverRevisionRef.current) return;
 
           serverRevisionRef.current = revision;
-          if (nextIndex !== currentIndexRef.current) {
+          if (nextIndex !== currentIndexRef.current || nextStep !== currentStepRef.current) {
             setCurrentIndex(nextIndex);
+            setCurrentStep(nextStep);
             currentIndexRef.current = nextIndex;
+            currentStepRef.current = nextStep;
             try {
               localStorage.setItem(STORAGE_KEY, nextIndex.toString());
+              localStorage.setItem(STORAGE_STEP_KEY, nextStep.toString());
             } catch {}
-            onRemoteChangeRef.current?.(nextIndex);
+            onRemoteChangeRef.current?.(nextIndex, nextStep);
           }
         })
         .catch(() => {});
@@ -248,6 +365,11 @@ export function useSlideSync(
 
   return {
     currentIndex,
-    setCurrentIndex: broadcastChange,
+    currentStep,
+    setCurrentIndex: (index: number, step?: number) => broadcastChange(index, step ?? 0),
+    setCurrentStep: (step: number) => broadcastChange(currentIndexRef.current, step),
+    handleNext,
+    handlePrev,
+    handleGoto,
   };
 }

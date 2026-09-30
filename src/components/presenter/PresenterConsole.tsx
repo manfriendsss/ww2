@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 export const PresenterConsole: React.FC = () => {
-  const { currentIndex, setCurrentIndex } = useSlideSync(0);
+  const { currentIndex, currentStep, handleNext, handlePrev, handleGoto } = useSlideSync(0);
   const totalSlides = slidesData.length;
   const currentSlide = slidesData[currentIndex] || slidesData[0];
   const nextSlide = currentIndex < totalSlides - 1 ? slidesData[currentIndex + 1] : null;
@@ -22,6 +22,11 @@ export const PresenterConsole: React.FC = () => {
         const u = new URL(window.location.href);
         u.searchParams.set('mode', 'notes');
         u.searchParams.set('slide', String(currentIndex + 1));
+        if (currentSlide.id === 2 && currentStep > 0) {
+          u.searchParams.set('step', String(currentStep));
+        } else {
+          u.searchParams.delete('step');
+        }
         return u.toString();
       })()
     : '';
@@ -52,24 +57,6 @@ export const PresenterConsole: React.FC = () => {
     const mins = Math.floor(totalSec / 60);
     const secs = totalSec % 60;
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  };
-
-  const handlePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentIndex < totalSlides - 1) {
-      setCurrentIndex(currentIndex + 1);
-    }
-  };
-
-  const handleGoto = (targetIndex: number) => {
-    if (targetIndex >= 0 && targetIndex < totalSlides) {
-      setCurrentIndex(targetIndex);
-    }
   };
 
   // Touch gesture listeners for mobile
@@ -145,6 +132,11 @@ export const PresenterConsole: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
+            {currentSlide.id === 2 && (
+              <span className="font-typewriter text-[11px] font-bold text-[#F5F5F0] bg-[#8B2626]/80 border border-[#8B2626] px-2 py-0.5 rounded shadow-sm">
+                STEP {currentStep}/4
+              </span>
+            )}
             <span className="font-courier text-xs text-[#B89C62] bg-[#16181A] px-2 py-0.5 rounded border border-[#3D493A]">
               {note.timing}
             </span>
@@ -156,6 +148,20 @@ export const PresenterConsole: React.FC = () => {
 
         {/* Mobile Main Body: 100% Focused on Speaking Content */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-5 flex flex-col">
+          {currentSlide.id === 2 && (
+            <div className="mb-3 px-3.5 py-2 rounded bg-[#1b1f1c] border border-[#B89C62]/50 flex items-center justify-between shadow-sm">
+              <span className="font-typewriter text-xs text-[#D4AF37] font-bold uppercase tracking-wider">
+                {currentStep === 0 && 'STEP 0/4: CONTRAST OVERVIEW'}
+                {currentStep === 1 && 'STEP 1/4: ANCIENT EGYPT (PYRAMIDS)'}
+                {currentStep === 2 && 'STEP 2/4: RENAISSANCE FLORENCE (DUOMO)'}
+                {currentStep === 3 && 'STEP 3/4: PARIS IN 1920s (JAZZ AGE)'}
+                {currentStep === 4 && 'STEP 4/4: DESTINATION WWII (1939–1945)'}
+              </span>
+              <span className="font-typewriter text-[10px] text-[#8c978e] uppercase">
+                {currentStep < 4 ? `Next: Step ${currentStep + 1}` : 'Next: Slide 3'}
+              </span>
+            </div>
+          )}
           <div className="flex-1 rounded-lg bg-[#1c221e] border border-[#3D493A] p-5 shadow-inner overflow-y-auto">
             <p className="font-body text-xl sm:text-2xl text-[#F5F5F0] leading-relaxed whitespace-pre-line selection:bg-[#8B2626]">
               {note.scriptSnippet}
@@ -167,15 +173,15 @@ export const PresenterConsole: React.FC = () => {
         <footer className="shrink-0 bg-[#1b1f1c] border-t-2 border-[#3D493A] px-4 py-3 pb-6 flex items-center justify-between gap-3 shadow-2xl">
           <button
             onClick={handlePrev}
-            disabled={currentIndex === 0}
+            disabled={currentIndex === 0 && currentStep === 0}
             className={`flex-1 py-4 px-4 rounded-lg font-typewriter text-sm font-bold uppercase flex items-center justify-center gap-2 border transition-all active:scale-95 ${
-              currentIndex === 0
+              currentIndex === 0 && currentStep === 0
                 ? 'opacity-30 cursor-not-allowed border-[#3D493A] text-[#8c978e]'
                 : 'bg-[#202521] hover:bg-[#3D493A] border-[#B89C62]/40 text-[#F5F5F0] shadow-md'
             }`}
           >
             <ChevronLeft size={20} />
-            PREV
+            {currentSlide.id === 2 && currentStep > 0 ? `PREV STEP (${currentStep - 1}/4)` : 'PREV'}
           </button>
 
           <button
@@ -187,7 +193,7 @@ export const PresenterConsole: React.FC = () => {
                 : 'bg-[#8B2626] hover:bg-[#a32d2d] border-[#B89C62] text-[#F5F5F0]'
             }`}
           >
-            NEXT
+            {currentSlide.id === 2 && currentStep < 4 ? `NEXT STEP (${currentStep + 1}/4)` : 'NEXT'}
             <ChevronRight size={20} />
           </button>
         </footer>
@@ -254,6 +260,11 @@ export const PresenterConsole: React.FC = () => {
                 </option>
               ))}
             </select>
+            {currentSlide.id === 2 && (
+              <div className="font-typewriter text-xs text-[#F5F5F0] bg-[#8B2626]/80 px-2.5 py-1 rounded border border-[#8B2626] font-bold">
+                STEP {currentStep}/4
+              </div>
+            )}
             <div className="font-typewriter text-sm text-[#B89C62] bg-[#16181A] px-3 py-1 rounded border border-[#3D493A]">
               {currentIndex + 1} / {totalSlides}
             </div>
@@ -290,6 +301,24 @@ export const PresenterConsole: React.FC = () => {
                 )}
               </div>
 
+              {/* Slide 2 Progressive Step Status Badge */}
+              {currentSlide.id === 2 && (
+                <div className="my-2 p-2.5 rounded bg-[#16181A] border border-[#B89C62]/40 text-xs font-typewriter flex items-center justify-between shadow-inner">
+                  <span className="text-[#D4AF37] font-bold uppercase">
+                    STEP {currentStep}/4: {
+                      currentStep === 0 ? 'Overview // Waiting to reveal' :
+                      currentStep === 1 ? 'Ancient Egypt (Pyramids)' :
+                      currentStep === 2 ? 'Renaissance Florence (Duomo)' :
+                      currentStep === 3 ? 'Paris in 1920s (Jazz Age)' :
+                      'Destination: WWII (1939–1945)'
+                    }
+                  </span>
+                  <span className="text-[#8c978e] text-[10px]">
+                    {currentStep < 4 ? `Next: Step ${currentStep + 1}` : 'Next: Slide 3'}
+                  </span>
+                </div>
+              )}
+
               {/* Media thumbnail if exists */}
               {currentSlide.media && (
                 <div className="my-3 h-28 rounded overflow-hidden border border-[#3D493A] bg-black/60">
@@ -305,15 +334,15 @@ export const PresenterConsole: React.FC = () => {
               <div className="pt-3 border-t border-[#3D493A] flex items-center justify-between gap-3 mt-2">
                 <button
                   onClick={handlePrev}
-                  disabled={currentIndex === 0}
+                  disabled={currentIndex === 0 && currentStep === 0}
                   className={`flex-1 py-2 px-4 rounded font-typewriter text-xs uppercase flex items-center justify-center gap-1 border transition-colors ${
-                    currentIndex === 0
+                    currentIndex === 0 && currentStep === 0
                       ? 'opacity-40 cursor-not-allowed border-[#3D493A] text-[#8c978e]'
                       : 'bg-[#16181A] hover:bg-[#3D493A] border-[#3D493A] text-[#F5F5F0]'
                   }`}
                 >
                   <ChevronLeft size={16} />
-                  PREV
+                  {currentSlide.id === 2 && currentStep > 0 ? `PREV (${currentStep - 1}/4)` : 'PREV'}
                 </button>
 
                 <button
@@ -325,7 +354,7 @@ export const PresenterConsole: React.FC = () => {
                       : 'bg-[#8B2626] hover:bg-[#a32d2d] border-[#8B2626] text-[#F5F5F0] font-bold shadow-md'
                   }`}
                 >
-                  NEXT
+                  {currentSlide.id === 2 && currentStep < 4 ? `NEXT STEP (${currentStep + 1}/4)` : 'NEXT'}
                   <ChevronRight size={16} />
                 </button>
               </div>

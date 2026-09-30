@@ -8,6 +8,7 @@ interface Env {
 let inMemoryCommand = {
   action: null as 'next' | 'prev' | 'goto' | null,
   index: undefined as number | undefined,
+  step: undefined as number | undefined,
   revision: 0,
   updatedAt: Date.now(),
 };
@@ -55,6 +56,7 @@ export async function onRequestPost(context: { request: Request; env: Env }): Pr
     const payload = (await context.request.json()) as {
       action?: 'next' | 'prev' | 'goto';
       index?: number;
+      step?: number;
     };
 
     if (payload.action === 'next' || payload.action === 'prev' || payload.action === 'goto') {
@@ -70,6 +72,9 @@ export async function onRequestPost(context: { request: Request; env: Env }): Pr
         action: payload.action,
         index: typeof payload.index === 'number' && Number.isFinite(payload.index)
           ? Math.max(0, Math.floor(payload.index))
+          : undefined,
+        step: typeof payload.step === 'number' && Number.isFinite(payload.step)
+          ? Math.max(0, Math.floor(payload.step))
           : undefined,
         revision: (currentCommand.revision || 0) + 1,
         updatedAt: Date.now(),

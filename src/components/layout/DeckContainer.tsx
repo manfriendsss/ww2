@@ -24,7 +24,7 @@ export const DeckContainer: React.FC = () => {
   const commandReadyRef = useRef<boolean>(false);
   const currentIndexRef = useRef<number>(0);
 
-  const onRemoteSlideChange = useCallback((newIndex: number) => {
+  const onRemoteSlideChange = useCallback((newIndex: number, newStep: number) => {
     setIsIntroExiting(false);
     if (newIndex > 0) {
       setIsIntroUnlocked(true);
@@ -32,13 +32,22 @@ export const DeckContainer: React.FC = () => {
         localStorage.setItem('ww2_intro_complete', 'true');
       } catch {}
     }
-    setDirection(newIndex > currentIndexRef.current ? 1 : -1);
-    if (slidesData[newIndex]?.id !== 2) {
-      setSlide2RevealStep(0);
-    }
+    setDirection(newIndex > currentIndexRef.current ? 1 : newIndex < currentIndexRef.current ? -1 : 0);
+    setSlide2RevealStep(newStep);
   }, []);
 
-  const { currentIndex, setCurrentIndex } = useSlideSync(0, onRemoteSlideChange);
+  const {
+    currentIndex,
+    currentStep,
+    handleNext: syncHandleNext,
+    handlePrev: syncHandlePrev,
+    handleGoto: syncHandleGoto,
+  } = useSlideSync(0, onRemoteSlideChange);
+
+  // Synchronize local reveal step with synced step
+  useEffect(() => {
+    setSlide2RevealStep(currentStep);
+  }, [currentStep]);
 
   useEffect(() => {
     currentIndexRef.current = currentIndex;
@@ -52,14 +61,15 @@ export const DeckContainer: React.FC = () => {
   const presenterUrl = new URL(window.location.href);
   presenterUrl.searchParams.set('mode', 'notes');
   presenterUrl.searchParams.set('slide', String(currentIndex + 1));
+  if (currentSlide.id === 2 && currentStep > 0) {
+    presenterUrl.searchParams.set('step', String(currentStep));
+  } else {
+    presenterUrl.searchParams.delete('step');
+  }
 
   const handleNext = () => {
     if (isIntroExiting) return;
-    if (isProgressiveSlide2 && slide2RevealStep < 4) {
-      setSlide2RevealStep((step) => Math.min(step + 1, 4));
-      return;
-    }
-    if (currentIndex === 0) {
+    if (currentIndex === 0 && !isIntroUnlocked) {
       setIsIntroUnlocked(true);
       try {
         localStorage.setItem('ww2_intro_complete', 'true');
@@ -67,35 +77,27 @@ export const DeckContainer: React.FC = () => {
       setIsIntroExiting(true);
       window.setTimeout(() => {
         setDirection(1);
-        setCurrentIndex(1);
+        syncHandleNext();
         setIsIntroExiting(false);
       }, 720);
       return;
     }
-    if (currentIndex < totalSlides - 1) {
-      setDirection(1);
-      setCurrentIndex(currentIndex + 1);
-    }
+    setDirection(1);
+    syncHandleNext();
   };
 
   const handlePrev = () => {
-    if (isProgressiveSlide2 && slide2RevealStep > 0) {
-      setSlide2RevealStep((step) => Math.max(step - 1, 0));
-      return;
-    }
-    if (currentIndex > 0) {
-      setIsIntroExiting(false);
-      setDirection(-1);
-      setCurrentIndex(currentIndex - 1);
-    }
+    if (currentIndex === 0) return;
+    setIsIntroExiting(false);
+    setDirection(-1);
+    syncHandlePrev();
   };
 
-  const handleSelectSlide = (index: number) => {
+  const handleSelectSlide = (index: number, step: number = 0) => {
     setIsIntroExiting(false);
-    if (slidesData[index]?.id !== 2) setSlide2RevealStep(0);
     if (index > 0) setIsIntroUnlocked(true);
     setDirection(index > currentIndex ? 1 : -1);
-    setCurrentIndex(index);
+    syncHandleGoto(index, step);
   };
 
   const handleToggleFullscreen = async () => {
@@ -139,7 +141,7 @@ export const DeckContainer: React.FC = () => {
     const interval = window.setInterval(() => {
       fetch('/api/command')
         .then((response) => (response.ok ? response.json() : null))
-        .then((data: { action?: 'next' | 'prev' | 'goto' | null; index?: number; revision?: number } | null) => {
+        .then((data: { action?: 'next' | 'prev' | 'goto' | null; index?: number; step?: number; revision?: number } | null) => {
           if (!data || !Number.isFinite(data.revision)) return;
 
           const revision = Number(data.revision);
@@ -153,7 +155,7 @@ export const DeckContainer: React.FC = () => {
 
           commandRevisionRef.current = revision;
           if (data.action === 'goto' && typeof data.index === 'number') {
-            handleSelectSlide(data.index);
+            handleSelectSlide(data.index, data.step ?? 0);
           } else if (data.action === 'next') {
             handleNext();
           } else if (data.action === 'prev') {

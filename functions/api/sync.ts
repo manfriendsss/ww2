@@ -7,6 +7,7 @@ interface Env {
 
 let inMemoryState = {
   index: 0,
+  step: 0,
   revision: 0,
   updatedAt: Date.now(),
 };
@@ -51,9 +52,12 @@ export async function onRequestGet(context: { env: Env }): Promise<Response> {
 
 export async function onRequestPost(context: { request: Request; env: Env }): Promise<Response> {
   try {
-    const payload = (await context.request.json()) as { index?: number };
+    const payload = (await context.request.json()) as { index?: number; step?: number };
     const nextIndex = typeof payload.index === 'number' && Number.isFinite(payload.index)
       ? Math.max(0, Math.floor(payload.index))
+      : 0;
+    const nextStep = typeof payload.step === 'number' && Number.isFinite(payload.step)
+      ? Math.max(0, Math.floor(payload.step))
       : 0;
 
     let currentState = inMemoryState;
@@ -66,6 +70,7 @@ export async function onRequestPost(context: { request: Request; env: Env }): Pr
 
     const newState = {
       index: nextIndex,
+      step: nextStep,
       revision: (currentState.revision || 0) + 1,
       updatedAt: Date.now(),
     };

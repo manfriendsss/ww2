@@ -6,12 +6,14 @@ import type { Plugin } from 'vite';
 function presentationSyncPlugin(): Plugin {
   let state = {
     index: 0,
+    step: 0,
     revision: 0,
     updatedAt: Date.now(),
   };
   let command = {
     action: null as 'next' | 'prev' | 'goto' | null,
     index: undefined as number | undefined,
+    step: undefined as number | undefined,
     revision: 0,
     updatedAt: Date.now(),
   };
@@ -52,10 +54,13 @@ function presentationSyncPlugin(): Plugin {
           });
           req.on('end', () => {
             try {
-              const payload = JSON.parse(body || '{}') as { index?: number };
+              const payload = JSON.parse(body || '{}') as { index?: number; step?: number };
               if (Number.isFinite(payload.index)) {
                 state = {
                   index: Math.max(0, Number(payload.index)),
+                  step: typeof payload.step === 'number' && Number.isFinite(payload.step)
+                    ? Math.max(0, Number(payload.step))
+                    : 0,
                   revision: state.revision + 1,
                   updatedAt: Date.now(),
                 };
@@ -95,12 +100,16 @@ function presentationSyncPlugin(): Plugin {
               const payload = JSON.parse(body || '{}') as {
                 action?: 'next' | 'prev' | 'goto';
                 index?: number;
+                step?: number;
               };
               if (payload.action === 'next' || payload.action === 'prev' || payload.action === 'goto') {
                 command = {
                   action: payload.action,
                   index: typeof payload.index === 'number' && Number.isFinite(payload.index)
                     ? Math.max(0, Math.floor(payload.index))
+                    : undefined,
+                  step: typeof payload.step === 'number' && Number.isFinite(payload.step)
+                    ? Math.max(0, Math.floor(payload.step))
                     : undefined,
                   revision: command.revision + 1,
                   updatedAt: Date.now(),
