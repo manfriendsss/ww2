@@ -56,7 +56,7 @@ export const ArchivalImage: React.FC<ArchivalImageProps> = ({
 
         {/* Image Frame */}
         <div 
-          className="archival-feather-frame relative overflow-hidden bg-black/60 rounded-sm cursor-pointer max-h-[220px] sm:max-h-[250px] lg:max-h-[280px] flex items-center justify-center"
+          className="archival-feather-frame relative overflow-hidden bg-black/60 rounded-sm cursor-pointer h-[260px] sm:h-[320px] md:h-[380px] lg:h-[420px] xl:h-[460px] w-full flex items-center justify-center"
           onClick={() => setIsModalOpen(true)}
         >
           <img

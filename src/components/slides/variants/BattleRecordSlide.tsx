@@ -42,26 +42,26 @@ export const BattleRecordSlide: React.FC<BattleRecordSlideProps> = ({ slide }) =
   }, [gallery, galleryGroup]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch h-full">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center h-full my-auto">
       {/* Left: Combat Record & Analysis */}
       <motion.div
         key={`battle-copy-${slide.id}`}
         initial={{ opacity: 0, x: -25 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
-        className="md:col-span-7 flex flex-col justify-between space-y-3"
+        className="lg:col-span-7 flex flex-col justify-center space-y-4 my-auto"
       >
-        <div>
+        <div className="space-y-3">
           {/* Header Metadata */}
-          <div className="flex flex-wrap items-center gap-3 mb-3">
+          <div className="flex flex-wrap items-center gap-3">
             {slide.theater && (
-              <span className="font-typewriter text-xs text-[#8B2626] font-bold tracking-wider uppercase border border-[#8B2626] px-2 py-0.5 rounded bg-[#8B2626]/10">
+              <span className="font-typewriter text-xs text-[#8B2626] font-bold tracking-wider uppercase border border-[#8B2626] px-2.5 py-1 rounded bg-[#8B2626]/10">
                 {slide.theater}
               </span>
             )}
             {slide.date && (
-              <span className="font-courier text-xs text-[#B89C62] flex items-center gap-1">
-                <Calendar size={12} />
+              <span className="font-courier text-xs sm:text-sm text-[#B89C62] flex items-center gap-1.5 font-medium">
+                <Calendar size={13} />
                 {slide.date}
               </span>
             )}
@@ -69,15 +69,15 @@ export const BattleRecordSlide: React.FC<BattleRecordSlideProps> = ({ slide }) =
 
           {/* Lead Headline */}
           {slide.content.lead && (
-            <div className="border-l-3 border-[#B89C62] pl-3 py-1 mb-2 bg-[#1c221e]/70 rounded-r">
-              <h3 className="font-heading text-lg sm:text-xl text-[#F5F5F0] tracking-wide">
+            <div className="border-l-3 border-[#B89C62] pl-3.5 py-1.5 bg-[#1c221e]/80 rounded-r">
+              <h3 className="font-heading text-lg sm:text-xl lg:text-2xl text-[#F5F5F0] tracking-wide leading-snug">
                 {slide.content.lead}
               </h3>
             </div>
           )}
 
           {/* Key Points */}
-          <div className="space-y-2 sm:space-y-2.5">
+          <div className="space-y-2.5 sm:space-y-3">
             {slide.content.points?.map((pt, idx) => {
               const borderAccent =
                 pt.accent === 'red'
@@ -92,13 +92,13 @@ export const BattleRecordSlide: React.FC<BattleRecordSlideProps> = ({ slide }) =
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 + idx * 0.08 }}
-                  className={`p-2.5 sm:p-3 rounded bg-[#1f2420]/90 border border-[#3D493A] ${borderAccent} hover:border-[#B89C62] transition-colors`}
+                  className={`p-3 sm:p-3.5 rounded bg-[#1f2420]/90 border border-[#3D493A] ${borderAccent} hover:border-[#B89C62] transition-colors`}
                 >
-                  <h4 className="font-heading text-xs sm:text-sm text-[#D4AF37] tracking-wider uppercase flex items-center gap-2">
-                    <Target size={13} className="text-[#8B2626]" />
+                  <h4 className="font-heading text-sm sm:text-base text-[#D4AF37] tracking-wider uppercase flex items-center gap-2">
+                    <Target size={14} className="text-[#8B2626] shrink-0" />
                     {pt.title}
                   </h4>
-                  <p className="font-body text-xs sm:text-sm text-[#d1cbbe] leading-relaxed mt-0.5">
+                  <p className="font-body text-xs sm:text-sm lg:text-base text-[#d1cbbe] leading-relaxed mt-1">
                     {pt.desc}
                   </p>
                 </motion.div>
@@ -109,23 +109,23 @@ export const BattleRecordSlide: React.FC<BattleRecordSlideProps> = ({ slide }) =
 
         {/* Statistical Telemetry Bar */}
         {slide.content.stats && slide.content.stats.length > 0 && (
-          <div className="grid grid-cols-2 gap-3 pt-2">
+          <div className="grid grid-cols-2 gap-3 pt-1">
             {slide.content.stats.map((st, idx) => (
               <motion.div
                 key={idx}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.35 + idx * 0.1 }}
-                className="p-3 rounded bg-[#16181A] border border-[#3D493A] flex flex-col justify-between"
+                className="p-3 sm:p-3.5 rounded bg-[#16181A] border border-[#3D493A] flex flex-col justify-between"
               >
-                <span className="font-typewriter text-[11px] text-[#8c978e] uppercase">
+                <span className="font-typewriter text-[11px] sm:text-xs text-[#8c978e] uppercase tracking-wider">
                   {st.label}
                 </span>
-                <span className="font-heading text-2xl text-[#D4AF37] my-0.5 font-bold">
+                <span className="font-heading text-2xl sm:text-3xl text-[#D4AF37] my-1 font-bold">
                   {st.value}
                 </span>
                 {st.detail && (
-                  <span className="font-courier text-[10px] text-[#B89C62] truncate">
+                  <span className="font-courier text-[11px] text-[#B89C62] truncate">
                     {st.detail}
                   </span>
                 )}
@@ -140,7 +140,7 @@ export const BattleRecordSlide: React.FC<BattleRecordSlideProps> = ({ slide }) =
         initial={{ opacity: 0, x: 25 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="md:col-span-5 flex flex-col justify-center space-y-4"
+        className="lg:col-span-5 flex flex-col justify-center my-auto"
       >
         {slide.media && gallery && gallery.length > 1 && activeMedia ? (
           <div className="relative border-2 border-[#3D493A] bg-[#1a1d1a] p-2 rounded shadow-2xl overflow-hidden">
@@ -159,7 +159,7 @@ export const BattleRecordSlide: React.FC<BattleRecordSlideProps> = ({ slide }) =
               </span>
             </div>
 
-            <div className="archival-feather-frame relative overflow-hidden bg-black/60 rounded-sm h-[300px] sm:h-[340px] lg:h-[380px]">
+            <div className="archival-feather-frame relative overflow-hidden bg-black/60 rounded-sm h-[320px] sm:h-[380px] md:h-[420px] lg:h-[460px] xl:h-[480px]">
               <AnimatePresence mode="wait">
                 <motion.img
                   key={activeMedia.url}

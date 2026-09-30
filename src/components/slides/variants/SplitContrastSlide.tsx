@@ -218,7 +218,7 @@ export const SplitContrastSlide: React.FC<SplitContrastSlideProps> = ({ slide, p
   }
 
   return (
-    <div className="flex flex-col h-full justify-between space-y-6">
+    <div className="flex flex-col justify-center h-full my-auto space-y-5 max-w-7xl mx-auto w-full">
       {/* 2-Column Split Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 items-stretch">
         {/* Left Column: Golden / Simulation */}

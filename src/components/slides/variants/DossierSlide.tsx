@@ -10,13 +10,13 @@ interface DossierSlideProps {
 
 export const DossierSlide: React.FC<DossierSlideProps> = ({ slide }) => {
   return (
-    <div className="flex flex-col h-full justify-between space-y-5">
+    <div className="flex flex-col justify-center h-full my-auto space-y-5 max-w-5xl mx-auto w-full">
       {/* Dossier Card Container */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex-1 p-6 md:p-8 rounded bg-[#202521] border-2 border-[#3D493A] shadow-2xl relative"
+        className="p-6 md:p-8 rounded-lg bg-[#202521] border-2 border-[#3D493A] shadow-2xl relative"
       >
         {/* Dossier Corner Rivets */}
         <div className="absolute top-2 left-2 w-2 h-2 rounded-full bg-[#B89C62]/60" />

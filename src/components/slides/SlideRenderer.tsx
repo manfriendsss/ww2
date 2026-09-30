@@ -109,7 +109,7 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
           initial="enter"
           animate="center"
           exit="exit"
-          className="w-full h-full"
+          className="w-full h-full flex flex-col justify-center"
         >
           {renderSlideContent()}
         </motion.div>

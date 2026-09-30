@@ -10,13 +10,13 @@ interface MemorialQuoteSlideProps {
 
 export const MemorialQuoteSlide: React.FC<MemorialQuoteSlideProps> = ({ slide }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch h-full">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center h-full my-auto">
       {/* Left: Quote & Philosophical Lessons */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.55 }}
-        className="md:col-span-7 flex flex-col justify-between space-y-4"
+        className="lg:col-span-7 flex flex-col justify-center space-y-4 my-auto"
       >
         {/* Solemn Quote Block */}
         {slide.content.quote && (
@@ -81,7 +81,7 @@ export const MemorialQuoteSlide: React.FC<MemorialQuoteSlideProps> = ({ slide })
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="md:col-span-5 flex flex-col justify-center"
+        className="lg:col-span-5 flex flex-col justify-center my-auto"
       >
         {slide.media && (
           <ArchivalImage
