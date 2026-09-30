@@ -37,14 +37,14 @@ export const WarVideoBackdrop: React.FC<WarVideoBackdropProps> = ({ opacity, cla
 
   return (
     <div
-      className={`absolute inset-0 pointer-events-none transition-opacity duration-1000 ease-out ${className}`}
+      className={`absolute inset-0 pointer-events-none overflow-hidden transition-opacity duration-1000 ease-out ${className}`}
       style={{ opacity }}
       aria-hidden="true"
     >
       <video
         ref={videoRef}
         key={VIDEO_SEGMENTS[activeIndex].src}
-        className="absolute inset-0 w-full h-full object-cover sepia contrast-125 brightness-75 saturate-[0.45]"
+        className="absolute inset-0 w-full h-full object-cover scale-[1.12] sepia contrast-125 brightness-75 saturate-[0.45]"
         src={VIDEO_SEGMENTS[activeIndex].src}
         muted
         playsInline

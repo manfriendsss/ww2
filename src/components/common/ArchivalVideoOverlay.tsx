@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Film, Volume2, VolumeX } from 'lucide-react';
+import { X, Film } from 'lucide-react';
 import { SlideCinematicVideo } from '../../types/slide';
 
 interface ArchivalVideoOverlayProps {
@@ -17,7 +17,6 @@ export const ArchivalVideoOverlay: React.FC<ArchivalVideoOverlayProps> = ({
   onNext,
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [isMuted, setIsMuted] = React.useState<boolean>(false);
 
   useEffect(() => {
     if (!isOpen || !video) {
@@ -31,24 +30,14 @@ export const ArchivalVideoOverlay: React.FC<ArchivalVideoOverlayProps> = ({
     if (!vid) return;
 
     vid.currentTime = 0;
+    vid.muted = true;
     const playPromise = vid.play();
     if (playPromise !== undefined) {
       playPromise.catch((err) => {
-        console.warn('Direct autoplay with audio prevented by browser policy, muting video:', err);
-        vid.muted = true;
-        setIsMuted(true);
-        vid.play().catch(() => {});
+        console.warn('Autoplay error:', err);
       });
     }
   }, [isOpen, video]);
-
-  const toggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!videoRef.current) return;
-    const nextMuted = !videoRef.current.muted;
-    videoRef.current.muted = nextMuted;
-    setIsMuted(nextMuted);
-  };
 
   return (
     <AnimatePresence mode="wait">
@@ -89,14 +78,6 @@ export const ArchivalVideoOverlay: React.FC<ArchivalVideoOverlayProps> = ({
 
               <div className="flex items-center gap-2 sm:gap-3">
                 <button
-                  onClick={toggleMute}
-                  title={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
-                  className="p-1 rounded bg-[#202521] hover:bg-[#3D493A] text-[#d1cbbe] transition-colors border border-[#3D493A]"
-                >
-                  {isMuted ? <VolumeX size={14} className="text-[#e57373]" /> : <Volume2 size={14} />}
-                </button>
-
-                <button
                   onClick={onClose}
                   title="Đóng video (ESC)"
                   className="p-1 rounded bg-[#202521] hover:bg-[#8B2626] text-[#e8e4d9] transition-colors border border-[#3D493A]"
@@ -112,10 +93,11 @@ export const ArchivalVideoOverlay: React.FC<ArchivalVideoOverlayProps> = ({
                 ref={videoRef}
                 src={video.src}
                 autoPlay
+                muted
                 playsInline
                 controls={false}
                 loop={false}
-                className="w-full h-full object-contain pointer-events-none archival-feather-mask"
+                className="w-full h-full object-cover scale-[1.14] pointer-events-none archival-feather-mask"
                 style={{
                   filter: 'sepia(0.42) contrast(1.18) brightness(0.92) grayscale(0.12)',
                 }}
