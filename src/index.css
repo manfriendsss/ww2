@@ -124,3 +124,17 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #B89C62;
 }
+
+/* Continuous counter-clockwise rotation */
+@keyframes spin-reverse {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.animate-spin-reverse {
+  animation: spin-reverse 1s linear infinite;
+}

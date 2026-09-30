@@ -26,9 +26,62 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
   );
   const [currentYear, setCurrentYear] = useState<number>(isUnlocked ? 1939 : 2026);
   const [rewindProgress, setRewindProgress] = useState<number>(isUnlocked ? 1 : 0);
+  const [isDialHovered, setIsDialHovered] = useState<boolean>(false);
+  const [dialSeconds, setDialSeconds] = useState<number>(12 * 3600); // Initial 12:00:00
   const hasCompletedRef = useRef<boolean>(isUnlocked);
   const animRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
+  const hoverAnimRef = useRef<number | null>(null);
+  const lastHoverTimeRef = useRef<number | null>(null);
+
+  // Fast hour countdown when hovering over the Time Dial button
+  useEffect(() => {
+    if (!isDialHovered) {
+      lastHoverTimeRef.current = null;
+      if (hoverAnimRef.current) {
+        cancelAnimationFrame(hoverAnimRef.current);
+        hoverAnimRef.current = null;
+      }
+      return;
+    }
+
+    // Rewinds ~3.5 hours per real second (12600 seconds/second)
+    const SECONDS_PER_REAL_SECOND = 12600;
+    const cycleSeconds = 12 * 3600;
+
+    const animateDial = (now: number) => {
+      if (lastHoverTimeRef.current === null) {
+        lastHoverTimeRef.current = now;
+      }
+      const delta = (now - lastHoverTimeRef.current) / 1000;
+      lastHoverTimeRef.current = now;
+
+      setDialSeconds((prev) => {
+        const next = prev - delta * SECONDS_PER_REAL_SECOND;
+        return ((next % cycleSeconds) + cycleSeconds) % cycleSeconds;
+      });
+
+      hoverAnimRef.current = requestAnimationFrame(animateDial);
+    };
+
+    hoverAnimRef.current = requestAnimationFrame(animateDial);
+
+    return () => {
+      if (hoverAnimRef.current) {
+        cancelAnimationFrame(hoverAnimRef.current);
+        hoverAnimRef.current = null;
+      }
+    };
+  }, [isDialHovered]);
+
+  const formatDialTime = (totalSec: number) => {
+    const s = Math.floor(totalSec) % 60;
+    const m = Math.floor(totalSec / 60) % 60;
+    let h = Math.floor(totalSec / 3600) % 12;
+    if (h === 0) h = 12;
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+  };
 
   const startRewind = () => {
     setStage('priming');
@@ -107,6 +160,7 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
     return () => {
       if (animRef.current) cancelAnimationFrame(animRef.current);
       if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+      if (hoverAnimRef.current) cancelAnimationFrame(hoverAnimRef.current);
     };
   }, []);
 
@@ -269,24 +323,152 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
                   whileHover={{ scale: 1.04, boxShadow: '0 0 34px rgba(34, 211, 238, 0.44)' }}
                   whileTap={{ scale: 0.98 }}
                   onClick={startRewind}
-                  className="group inline-flex items-center gap-4 rounded-full border border-cyan-300/40 bg-slate-950/65 py-2.5 pl-3 pr-6 text-left text-white shadow-[0_18px_48px_rgba(6,182,212,0.22)] backdrop-blur-md transition-all hover:border-cyan-200/75 hover:bg-cyan-950/65"
+                  onMouseEnter={() => setIsDialHovered(true)}
+                  onMouseLeave={() => setIsDialHovered(false)}
+                  className="group relative inline-flex items-center gap-4 rounded-full border border-cyan-300/40 bg-slate-950/75 py-2.5 pl-3 pr-6 text-left text-white shadow-[0_18px_48px_rgba(6,182,212,0.22)] backdrop-blur-md transition-all hover:border-cyan-200/75 hover:bg-cyan-950/65"
                 >
-                  <span className="relative grid h-14 w-14 place-items-center rounded-full border border-cyan-200/60 bg-[radial-gradient(circle,rgba(34,211,238,0.28)_0%,rgba(15,23,42,0.95)_70%)] shadow-[inset_0_0_18px_rgba(125,211,252,0.22)]">
-                    <span className="absolute inset-1 rounded-full border border-cyan-100/20" />
-                    <span className="absolute left-1/2 top-1.5 h-2 w-px -translate-x-1/2 bg-cyan-100/70" />
-                    <span className="absolute bottom-1.5 left-1/2 h-2 w-px -translate-x-1/2 bg-cyan-100/45" />
-                    <span className="absolute left-1.5 top-1/2 h-px w-2 -translate-y-1/2 bg-cyan-100/45" />
-                    <span className="absolute right-1.5 top-1/2 h-px w-2 -translate-y-1/2 bg-cyan-100/45" />
-                    <span className="absolute left-1/2 top-1/2 h-5 w-0.5 origin-bottom -translate-x-1/2 -translate-y-full rotate-45 rounded-full bg-cyan-100 transition-transform duration-500 group-hover:rotate-[405deg]" />
-                    <span className="absolute left-1/2 top-1/2 h-3 w-0.5 origin-bottom -translate-x-1/2 -translate-y-full -rotate-45 rounded-full bg-[#D4AF37]" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#D4AF37] shadow-[0_0_14px_rgba(212,175,55,0.8)]" />
+                  {/* === CHRONO DIAL ICON === */}
+                  <span className="relative grid h-14 w-14 shrink-0 place-items-center rounded-full border border-cyan-200/60 bg-[radial-gradient(circle,rgba(34,211,238,0.28)_0%,rgba(15,23,42,0.95)_70%)] shadow-[inset_0_0_18px_rgba(125,211,252,0.25)] overflow-hidden">
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 56 56">
+                      {/* Outer Dashed Orbit (Spins counter-clockwise when hovered) */}
+                      <g
+                        style={{
+                          transformOrigin: '28px 28px',
+                          animation: isDialHovered ? 'spin-reverse 4s linear infinite' : 'none',
+                          opacity: isDialHovered ? 0.85 : 0.25,
+                          transition: 'opacity 0.3s ease-out',
+                        }}
+                      >
+                        <circle
+                          cx="28"
+                          cy="28"
+                          r="25"
+                          fill="none"
+                          stroke="#22d3ee"
+                          strokeWidth="0.8"
+                          strokeDasharray="2 3"
+                        />
+                      </g>
+
+                      {/* 12 Clock Hour Ticks */}
+                      {[...Array(12)].map((_, i) => {
+                        const angle = (i * 30 * Math.PI) / 180;
+                        const isMajor = i % 3 === 0;
+                        const rInner = isMajor ? 19 : 21.5;
+                        const rOuter = 24;
+                        const x1 = 28 + rInner * Math.sin(angle);
+                        const y1 = 28 - rInner * Math.cos(angle);
+                        const x2 = 28 + rOuter * Math.sin(angle);
+                        const y2 = 28 - rOuter * Math.cos(angle);
+                        return (
+                          <line
+                            key={i}
+                            x1={x1}
+                            y1={y1}
+                            x2={x2}
+                            y2={y2}
+                            stroke={isMajor ? '#a5f3fc' : '#38bdf8'}
+                            strokeWidth={isMajor ? 1.6 : 0.9}
+                            strokeOpacity={isMajor ? 0.9 : 0.45}
+                            strokeLinecap="round"
+                          />
+                        );
+                      })}
+
+                      {/* Hour Hand: Gold Vintage Brass (Rotates counter-clockwise continuously when hovered) */}
+                      <g
+                        style={{
+                          transformOrigin: '28px 28px',
+                          animation: isDialHovered ? 'spin-reverse 3.6s linear infinite' : 'none',
+                          transform: isDialHovered ? undefined : 'rotate(-45deg)',
+                          transition: 'transform 0.4s ease-out',
+                        }}
+                      >
+                        <line
+                          x1="28"
+                          y1="28"
+                          x2="28"
+                          y2="16"
+                          stroke="#D4AF37"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                        />
+                      </g>
+
+                      {/* Minute Hand: Bright Cyan (Spins counter-clockwise rapidly) */}
+                      <g
+                        style={{
+                          transformOrigin: '28px 28px',
+                          animation: isDialHovered ? 'spin-reverse 0.65s linear infinite' : 'none',
+                          transform: isDialHovered ? undefined : 'rotate(45deg)',
+                          transition: 'transform 0.4s ease-out',
+                        }}
+                      >
+                        <line
+                          x1="28"
+                          y1="28"
+                          x2="28"
+                          y2="10"
+                          stroke="#a5f3fc"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                        />
+                      </g>
+
+                      {/* Second Hand Needle: High-speed sweep needle counter-clockwise */}
+                      <g
+                        style={{
+                          transformOrigin: '28px 28px',
+                          animation: isDialHovered ? 'spin-reverse 0.22s linear infinite' : 'none',
+                          transform: isDialHovered ? undefined : 'rotate(120deg)',
+                          transition: 'transform 0.4s ease-out',
+                        }}
+                      >
+                        <line
+                          x1="28"
+                          y1="33"
+                          x2="28"
+                          y2="7"
+                          stroke="#f43f5e"
+                          strokeWidth="1.1"
+                          strokeLinecap="round"
+                        />
+                        <circle cx="28" cy="11" r="1.4" fill="#f43f5e" />
+                      </g>
+
+                      {/* Center Cap Pin */}
+                      <circle
+                        cx="28"
+                        cy="28"
+                        r="2.6"
+                        fill="#D4AF37"
+                        stroke="#0f172a"
+                        strokeWidth="1"
+                      />
+                    </svg>
                   </span>
+
+                  {/* === BUTTON LABELS & RAPID REWIND HOUR DISPLAY === */}
                   <span className="flex flex-col">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-cyan-200/80">
-                      Set coordinates: 1939
+                    <span className="flex items-center gap-2">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-cyan-200/80">
+                        {isDialHovered ? 'REVERSING TIME' : 'Set coordinates: 1939'}
+                      </span>
+                      <span className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-cyan-300 bg-cyan-950/90 border border-cyan-400/40 px-2 py-0.5 rounded shadow-[0_0_12px_rgba(34,211,238,0.25)]">
+                        <Clock
+                          size={11}
+                          className={`text-cyan-400 ${isDialHovered ? 'animate-spin-reverse' : ''}`}
+                        />
+                        <span className="tabular-nums">{formatDialTime(dialSeconds)}</span>
+                      </span>
                     </span>
-                    <span className="font-bold uppercase tracking-[0.18em] text-sm sm:text-base">
-                      Engage Time Dial
+                    <span className="font-bold uppercase tracking-[0.18em] text-sm sm:text-base flex items-center gap-2">
+                      <span>Engage Time Dial</span>
+                      {isDialHovered && (
+                        <span className="text-[11px] font-mono tracking-widest text-[#D4AF37] animate-pulse">
+                          ◄ REWINDING
+                        </span>
+                      )}
                     </span>
                   </span>
                 </motion.button>
