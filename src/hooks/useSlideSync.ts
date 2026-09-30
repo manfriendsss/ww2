@@ -4,8 +4,6 @@ import { slidesData } from '../data/slidesData';
 const CHANNEL_NAME = 'ww2_presentation_sync_channel';
 const STORAGE_KEY = 'ww2_current_slide_index';
 const STORAGE_STEP_KEY = 'ww2_current_slide_step';
-const SYNC_ENDPOINT = '/api/sync';
-const COMMAND_ENDPOINT = '/api/command';
 
 interface SyncMessage {
   type: 'SLIDE_CHANGE' | 'REQUEST_SYNC' | 'SYNC_STATE';
@@ -105,7 +103,6 @@ export function useSlideSync(
   const currentIndexRef = useRef<number>(initialIndex);
   const currentStepRef = useRef<number>(0);
   const onRemoteChangeRef = useRef(onRemoteChange);
-  const serverRevisionRef = useRef<number>(-1);
 
   const [currentIndex, setCurrentIndex] = useState<number>(() => {
     return getInitialSlideIndex(initialIndex);
@@ -139,7 +136,6 @@ export function useSlideSync(
       localStorage.setItem(STORAGE_STEP_KEY, newStep.toString());
     } catch {}
 
-    // 1. BroadcastChannel: Instant (<1ms) synchronization between open tabs/windows
     if (channelRef.current) {
       try {
         channelRef.current.postMessage({
@@ -152,27 +148,6 @@ export function useSlideSync(
         console.error('BroadcastChannel error:', err);
       }
     }
-
-    // 2. Network sync endpoint for remote / mobile devices
-    fetch(SYNC_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ index: newIndex, step: newStep }),
-    })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data: { revision?: number } | null) => {
-        if (data && Number.isFinite(data.revision)) {
-          serverRevisionRef.current = Number(data.revision);
-        }
-      })
-      .catch(() => {});
-
-    // 3. Command endpoint backup
-    fetch(COMMAND_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'goto', index: newIndex, step: newStep }),
-    }).catch(() => {});
   }, []);
 
   const handleNext = useCallback(() => {
@@ -219,7 +194,7 @@ export function useSlideSync(
     [broadcastChange]
   );
 
-  // Set up BroadcastChannel and localStorage listeners for instant cross-window sync
+  // Keep optional same-browser tabs in sync without any network calls.
   useEffect(() => {
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
       const channel = new BroadcastChannel(CHANNEL_NAME);
@@ -285,85 +260,6 @@ export function useSlideSync(
       window.removeEventListener('storage', handleStorage);
     };
   }, []);
-
-  // Initial server sync on mount + network polling for mobile / cross-device
-  useEffect(() => {
-    const isNotesUrl =
-      typeof window !== 'undefined' &&
-      new URLSearchParams(window.location.search).get('mode') === 'notes';
-    const hasUrlSlide =
-      typeof window !== 'undefined' &&
-      (new URLSearchParams(window.location.search).has('slide') ||
-        new URLSearchParams(window.location.search).has('index'));
-
-    // Initial mount sync: Connect to server state
-    fetch(SYNC_ENDPOINT)
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data: { index?: number; step?: number; revision?: number } | null) => {
-        if (!data || !Number.isFinite(data.index) || !Number.isFinite(data.revision)) return;
-
-        const revision = Number(data.revision);
-        const serverIndex = Number(data.index);
-        const serverStep =
-          typeof data.step === 'number' && Number.isFinite(data.step) ? Number(data.step) : 0;
-        serverRevisionRef.current = revision;
-
-        if (hasUrlSlide) {
-          // If URL explicitly had a slide param, broadcast that to server
-          broadcastChange(currentIndexRef.current, currentStepRef.current);
-        } else if (isNotesUrl) {
-          // Presenter console opened without URL slide param: adopt active presentation slide
-          if (serverIndex !== currentIndexRef.current || serverStep !== currentStepRef.current) {
-            setCurrentIndex(serverIndex);
-            setCurrentStep(serverStep);
-            currentIndexRef.current = serverIndex;
-            currentStepRef.current = serverStep;
-            try {
-              localStorage.setItem(STORAGE_KEY, serverIndex.toString());
-              localStorage.setItem(STORAGE_STEP_KEY, serverStep.toString());
-            } catch {}
-            onRemoteChangeRef.current?.(serverIndex, serverStep);
-          }
-        } else {
-          // Main presentation deck: initialize server with current deck index and step
-          broadcastChange(currentIndexRef.current, currentStepRef.current);
-        }
-      })
-      .catch(() => {});
-
-    // Polling interval for updates from remote / server (every 300ms)
-    const interval = window.setInterval(() => {
-      fetch(SYNC_ENDPOINT)
-        .then((response) => (response.ok ? response.json() : null))
-        .then((data: { index?: number; step?: number; revision?: number } | null) => {
-          if (!data || !Number.isFinite(data.index) || !Number.isFinite(data.revision)) return;
-
-          const revision = Number(data.revision);
-          const nextIndex = Number(data.index);
-          const nextStep =
-            typeof data.step === 'number' && Number.isFinite(data.step) ? Number(data.step) : 0;
-
-          // If revision hasn't changed, ignore
-          if (revision === serverRevisionRef.current) return;
-
-          serverRevisionRef.current = revision;
-          if (nextIndex !== currentIndexRef.current || nextStep !== currentStepRef.current) {
-            setCurrentIndex(nextIndex);
-            setCurrentStep(nextStep);
-            currentIndexRef.current = nextIndex;
-            currentStepRef.current = nextStep;
-            try {
-              localStorage.setItem(STORAGE_KEY, nextIndex.toString());
-              localStorage.setItem(STORAGE_STEP_KEY, nextStep.toString());
-            } catch {}
-            onRemoteChangeRef.current?.(nextIndex, nextStep);
-          }
-        })
-        .catch(() => {});
-    }, 300);
-
-    return () => window.clearInterval(interval);
-  }, [broadcastChange]);
 
   return {
     currentIndex,

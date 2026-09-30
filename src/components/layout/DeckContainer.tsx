@@ -21,8 +21,6 @@ export const DeckContainer: React.FC = () => {
   const [isIntroUnlocked, setIsIntroUnlocked] = useState<boolean>(false);
   const [isIntroExiting, setIsIntroExiting] = useState<boolean>(false);
   const [slide2RevealStep, setSlide2RevealStep] = useState<number>(0);
-  const commandRevisionRef = useRef<number>(0);
-  const commandReadyRef = useRef<boolean>(false);
   const currentIndexRef = useRef<number>(0);
 
   const onRemoteSlideChange = useCallback((newIndex: number, newStep: number) => {
@@ -138,37 +136,6 @@ export const DeckContainer: React.FC = () => {
     url.searchParams.set('slide', String(currentIndex + 1));
     window.open(url.toString(), '_blank', 'noopener,noreferrer');
   };
-
-  useEffect(() => {
-    const interval = window.setInterval(() => {
-      fetch('/api/command')
-        .then((response) => (response.ok ? response.json() : null))
-        .then((data: { action?: 'next' | 'prev' | 'goto' | null; index?: number; step?: number; revision?: number } | null) => {
-          if (!data || !Number.isFinite(data.revision)) return;
-
-          const revision = Number(data.revision);
-          if (!commandReadyRef.current) {
-            commandReadyRef.current = true;
-            commandRevisionRef.current = revision;
-            return;
-          }
-
-          if (revision === commandRevisionRef.current) return;
-
-          commandRevisionRef.current = revision;
-          if (data.action === 'goto' && typeof data.index === 'number') {
-            handleSelectSlide(data.index, data.step ?? 0);
-          } else if (data.action === 'next') {
-            handleNext();
-          } else if (data.action === 'prev') {
-            handlePrev();
-          }
-        })
-        .catch(() => {});
-    }, 350);
-
-    return () => window.clearInterval(interval);
-  }, [currentIndex, isIntroExiting, isProgressiveSlide2, slide2RevealStep, totalSlides]);
 
   // Keyboard navigation listener
   useEffect(() => {
