@@ -1,0 +1,20 @@
+WWII Visual Identity & Theme Guide
+Color Palette:
+
+Background: Aged Parchment (#EFE8D8) or Dark Munitions Slate (#24272A)
+
+Military Olive: #3D493A (Headers, structural cards)
+
+Blood & Stamp Red: #8B2626 (Highlight boxes, dates, badges)
+
+Brass/Khaki: #B89C62 (Subheadings, borders)
+
+Primary Text: Charcoal Black (#1C1E20) or Warm White (#F5F5F0)
+
+Typography:
+
+Titles: Oswald, Bebas Neue, or Special Elite (Vintage Typewriter / Stencil look)
+
+Body: Georgia, Roboto Slab, or Courier Prime (Clean, legible historical print)
+
+Visual Motifs: Muted sepia filters on archival photos, classified stamp badges (RESTRICTED / ARCHIVE), topographic map textures, and cardboard paperclip frames.

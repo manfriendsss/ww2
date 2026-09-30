@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.wrangler/
+
+*.log
+.env
+.env.*
+
+/warthunder.mp4
+/warpath.mp4
+/wait for me.mp4
