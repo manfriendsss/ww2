@@ -3,9 +3,9 @@ import { motion } from 'framer-motion';
 
 const WAR_VIDEO_FADE_SECONDS = 3;
 const VIDEO_SEGMENTS = [
-  { src: '/assets/warthunder.mp4', start: 80, end: 206 },
-  { src: '/assets/warpath.mp4', start: 58, end: 273 },
-  { src: '/assets/wait%20for%20me.mp4', start: 0, end: 185 },
+  { src: '/assets/bg/warthunder-bg.mp4', start: 0, end: 126 },
+  { src: '/assets/bg/warpath-bg.mp4', start: 0, end: 215 },
+  { src: '/assets/bg/wait-for-me-bg.mp4', start: 0, end: 185 },
 ] as const;
 
 const PLAYLIST_DURATION = VIDEO_SEGMENTS.reduce(
