@@ -6,6 +6,4 @@ dist/
 .env
 .env.*
 
-/warthunder.mp4
-/warpath.mp4
-/wait for me.mp4
+/*.mp4

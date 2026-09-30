@@ -9,6 +9,7 @@ import { SlideRenderer } from '../slides/SlideRenderer';
 import { SpeakerNotesModal } from './SpeakerNotesModal';
 import { SlideOverviewModal } from './SlideOverviewModal';
 import { WarVideoBackdrop } from '../common/WarVideoBackdrop';
+import { ArchivalVideoOverlay } from '../common/ArchivalVideoOverlay';
 
 export const DeckContainer: React.FC = () => {
   const deckRef = useRef<HTMLDivElement | null>(null);
@@ -58,10 +59,11 @@ export const DeckContainer: React.FC = () => {
   const canAdvance = !(currentIndex === 0 && !isIntroUnlocked);
   const isIntroSlide = currentIndex === 0;
   const isProgressiveSlide2 = currentSlide.id === 2;
+  const isCinematicVideoActive = Boolean(currentSlide.cinematicVideo && currentStep === 1);
   const presenterUrl = new URL(window.location.href);
   presenterUrl.searchParams.set('mode', 'notes');
   presenterUrl.searchParams.set('slide', String(currentIndex + 1));
-  if (currentSlide.id === 2 && currentStep > 0) {
+  if (currentStep > 0) {
     presenterUrl.searchParams.set('step', String(currentStep));
   } else {
     presenterUrl.searchParams.delete('step');
@@ -193,6 +195,11 @@ export const DeckContainer: React.FC = () => {
         e.preventDefault();
         handleToggleFullscreen();
       } else if (e.key === 'Escape') {
+        if (isCinematicVideoActive) {
+          e.preventDefault();
+          handlePrev();
+          return;
+        }
         setShowOverview(false);
         setShowNotes(false);
         setIsFullscreenFallback(false);
@@ -202,7 +209,8 @@ export const DeckContainer: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentIndex, totalSlides, canAdvance, isFullscreenFallback, isIntroExiting, slide2RevealStep]);
+  }, [currentIndex, currentStep, isCinematicVideoActive, totalSlides, canAdvance, isFullscreenFallback, isIntroExiting, slide2RevealStep]);
+
 
   // Fullscreen change listener
   useEffect(() => {
@@ -305,7 +313,7 @@ export const DeckContainer: React.FC = () => {
             slide={currentSlide} 
             direction={direction} 
             isIntroUnlocked={isIntroUnlocked}
-            progressiveStep={isProgressiveSlide2 ? slide2RevealStep : undefined}
+            progressiveStep={isProgressiveSlide2 ? slide2RevealStep : currentStep}
             onIntroComplete={() => {
               setIsIntroUnlocked(true);
               localStorage.setItem('ww2_intro_complete', 'true');
@@ -328,6 +336,14 @@ export const DeckContainer: React.FC = () => {
           onPrev={handlePrev}
           onNext={handleNext}
           canAdvance={canAdvance}
+        />
+
+        {/* Archival Cinematic Video Modal Overlay */}
+        <ArchivalVideoOverlay
+          isOpen={isCinematicVideoActive}
+          video={currentSlide.cinematicVideo}
+          onClose={handlePrev}
+          onNext={handleNext}
         />
       </div>
 

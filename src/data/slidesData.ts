@@ -619,6 +619,12 @@ If I were an invisible witness standing on the harbor, my heart would stop from 
 
 Why is this moment so important? Because before this attack, the United States was not as interested in joining the war. Most Americans wanted to stay out of foreign trouble. But Pearl Harbor changed everything in one morning. President Roosevelt called it "a date which will live in infamy." America officially joined the war, and the whole balance of world power changed forever.`,
       keyVocabulary: ["Date which will live in infamy", "Not as eager to...", "Arsenal of Democracy", "Cataclysm"]
+    },
+    cinematicVideo: {
+      src: "/pearlhabor.mp4",
+      title: "PEARL HARBOR: THE TURNING POINT (07:55 AM, DEC 7, 1941)",
+      badge: "DECLASSIFIED NAVAL COMBAT ARCHIVE",
+      caption: "Surprise air assault over Battleship Row and the catastrophic explosion of USS Arizona."
     }
   },
   {
@@ -781,6 +787,12 @@ Their will was stronger than the German iron and colder than the Russian winter.
 
 Standing in the snow of Stalingrad would teach me what true resilience looks like when human beings face the edge of survival.`,
       keyVocabulary: ["Order No. 227", "Not one step back!", "T-34 tanks", "Never as strong as before"]
+    },
+    cinematicVideo: {
+      src: "/stalingrad.mp4",
+      title: "THE SIEGE OF STALINGRAD: COMBAT IN THE RUINS (1942–1943)",
+      badge: "DECLASSIFIED RED ARMY HISTORICAL RECORD",
+      caption: "Urban combat in the frozen ruins along the Volga River and the resilience of the Soviet people."
     }
   },
   {

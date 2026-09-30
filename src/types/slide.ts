@@ -49,6 +49,13 @@ export interface SpeakerNoteData {
   keyVocabulary?: string[];
 }
 
+export interface SlideCinematicVideo {
+  src: string;
+  title: string;
+  badge?: string;
+  caption?: string;
+}
+
 export interface SlideData {
   id: number;
   title: string;
@@ -93,4 +100,6 @@ export interface SlideData {
   };
   media?: SlideMedia;
   speakerNote: SpeakerNoteData;
+  cinematicVideo?: SlideCinematicVideo;
 }
+

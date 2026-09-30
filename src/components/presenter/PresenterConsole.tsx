@@ -22,7 +22,7 @@ export const PresenterConsole: React.FC = () => {
         const u = new URL(window.location.href);
         u.searchParams.set('mode', 'notes');
         u.searchParams.set('slide', String(currentIndex + 1));
-        if (currentSlide.id === 2 && currentStep > 0) {
+        if (currentStep > 0) {
           u.searchParams.set('step', String(currentStep));
         } else {
           u.searchParams.delete('step');
@@ -162,6 +162,19 @@ export const PresenterConsole: React.FC = () => {
               </span>
             </div>
           )}
+          {currentSlide.cinematicVideo && (
+            <div className="mb-3 px-3.5 py-2 rounded bg-[#1b1f1c] border border-[#8B2626]/70 flex items-center justify-between shadow-sm">
+              <span className="font-typewriter text-xs text-[#D4AF37] font-bold uppercase tracking-wider flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#8B2626] animate-pulse" />
+                {currentStep === 0
+                  ? `CINEMATIC READY: ${currentSlide.cinematicVideo.title}`
+                  : `● PLAYING CINEMATIC ARCHIVE`}
+              </span>
+              <span className="font-typewriter text-[10px] text-[#8c978e] uppercase">
+                {currentStep === 0 ? 'Next: Play Video' : `Next: Slide ${currentIndex + 2}`}
+              </span>
+            </div>
+          )}
           <div className="flex-1 rounded-lg bg-[#1c221e] border border-[#3D493A] p-5 shadow-inner overflow-y-auto">
             <p className="font-body text-xl sm:text-2xl text-[#F5F5F0] leading-relaxed whitespace-pre-line selection:bg-[#8B2626]">
               {note.scriptSnippet}
@@ -181,7 +194,11 @@ export const PresenterConsole: React.FC = () => {
             }`}
           >
             <ChevronLeft size={20} />
-            {currentSlide.id === 2 && currentStep > 0 ? `PREV STEP (${currentStep - 1}/4)` : 'PREV'}
+            {currentSlide.id === 2 && currentStep > 0
+              ? `PREV STEP (${currentStep - 1}/4)`
+              : currentSlide.cinematicVideo && currentStep === 1
+              ? 'CLOSE VIDEO'
+              : 'PREV'}
           </button>
 
           <button
@@ -193,7 +210,11 @@ export const PresenterConsole: React.FC = () => {
                 : 'bg-[#8B2626] hover:bg-[#a32d2d] border-[#B89C62] text-[#F5F5F0]'
             }`}
           >
-            {currentSlide.id === 2 && currentStep < 4 ? `NEXT STEP (${currentStep + 1}/4)` : 'NEXT'}
+            {currentSlide.id === 2 && currentStep < 4
+              ? `NEXT STEP (${currentStep + 1}/4)`
+              : currentSlide.cinematicVideo && currentStep === 0
+              ? 'PLAY VIDEO'
+              : 'NEXT'}
             <ChevronRight size={20} />
           </button>
         </footer>
@@ -319,6 +340,21 @@ export const PresenterConsole: React.FC = () => {
                 </div>
               )}
 
+              {/* Cinematic Video Status Badge */}
+              {currentSlide.cinematicVideo && (
+                <div className="my-2 p-2.5 rounded bg-[#16181A] border border-[#8B2626]/70 text-xs font-typewriter flex items-center justify-between shadow-inner">
+                  <span className="text-[#D4AF37] font-bold uppercase flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#8B2626] animate-pulse" />
+                    {currentStep === 0
+                      ? `CINEMATIC READY: ${currentSlide.cinematicVideo.title}`
+                      : `● PLAYING CINEMATIC ARCHIVE`}
+                  </span>
+                  <span className="text-[#8c978e] text-[10px]">
+                    {currentStep === 0 ? 'Next: Play Video' : `Next: Slide ${currentIndex + 2}`}
+                  </span>
+                </div>
+              )}
+
               {/* Media thumbnail if exists */}
               {currentSlide.media && (
                 <div className="my-3 h-28 rounded overflow-hidden border border-[#3D493A] bg-black/60">
@@ -342,7 +378,11 @@ export const PresenterConsole: React.FC = () => {
                   }`}
                 >
                   <ChevronLeft size={16} />
-                  {currentSlide.id === 2 && currentStep > 0 ? `PREV (${currentStep - 1}/4)` : 'PREV'}
+                  {currentSlide.id === 2 && currentStep > 0
+                    ? `PREV (${currentStep - 1}/4)`
+                    : currentSlide.cinematicVideo && currentStep === 1
+                    ? 'CLOSE VIDEO'
+                    : 'PREV'}
                 </button>
 
                 <button
@@ -354,7 +394,11 @@ export const PresenterConsole: React.FC = () => {
                       : 'bg-[#8B2626] hover:bg-[#a32d2d] border-[#8B2626] text-[#F5F5F0] font-bold shadow-md'
                   }`}
                 >
-                  {currentSlide.id === 2 && currentStep < 4 ? `NEXT STEP (${currentStep + 1}/4)` : 'NEXT'}
+                  {currentSlide.id === 2 && currentStep < 4
+                    ? `NEXT STEP (${currentStep + 1}/4)`
+                    : currentSlide.cinematicVideo && currentStep === 0
+                    ? 'PLAY VIDEO'
+                    : 'NEXT'}
                   <ChevronRight size={16} />
                 </button>
               </div>

@@ -19,6 +19,8 @@ export function getMaxStepsForSlide(slideIndex: number): number {
   if (!slide) return 0;
   // Slide 2 has id: 2, 4 sub-steps
   if (slide.id === 2) return 4;
+  // Slide with cinematic video overlay has 1 sub-step (step 1 = open video overlay)
+  if (slide.cinematicVideo) return 1;
   return 0;
 }
 
