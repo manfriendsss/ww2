@@ -133,9 +133,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               onClick={(event) => event.stopPropagation()}
             >
               <div className="flex items-center justify-between border-b border-[#3D493A] pb-3">
-                <span className="font-typewriter text-xs text-[#e57373] uppercase tracking-widest">
-                  Mobile Speaker Notes
-                </span>
+                <div>
+                  <span className="font-typewriter text-xs text-[#e57373] uppercase tracking-widest block">
+                    Mobile Speaker Notes
+                  </span>
+                  <span className="font-typewriter text-[11px] text-[#D4AF37] uppercase">
+                    SLIDE {currentIndex + 1} OF {totalSlides}
+                  </span>
+                </div>
                 <button
                   onClick={() => setShowQr(false)}
                   className="rounded p-1 text-[#d1cbbe] hover:bg-[#3D493A]"
@@ -151,7 +156,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 {presenterUrl}
               </p>
               <p className="mt-2 font-body text-xs leading-relaxed text-[#d1cbbe]">
-                Open this on a phone connected to the same Wi-Fi. Use the phone console's Prev/Next controls to drive the main slide.
+                Scan to open directly at Slide {currentIndex + 1}. Use the phone controls to drive the main slide.
               </p>
             </motion.div>
           </motion.div>

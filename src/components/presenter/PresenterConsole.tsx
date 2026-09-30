@@ -14,13 +14,19 @@ import {
 export const PresenterConsole: React.FC = () => {
   const { currentIndex, setCurrentIndex } = useSlideSync(0);
   const totalSlides = slidesData.length;
-  const currentSlide = slidesData[currentIndex];
+  const currentSlide = slidesData[currentIndex] || slidesData[0];
   const nextSlide = currentIndex < totalSlides - 1 ? slidesData[currentIndex + 1] : null;
-  const presenterUrl = window.location.href;
-  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=132x132&margin=8&data=${encodeURIComponent(presenterUrl)}`;
-  const [isIntroComplete, setIsIntroComplete] = useState<boolean>(() => {
-    return localStorage.getItem('ww2_intro_complete') === 'true';
-  });
+
+  const presenterUrl = typeof window !== 'undefined'
+    ? (() => {
+        const u = new URL(window.location.href);
+        u.searchParams.set('mode', 'notes');
+        u.searchParams.set('slide', String(currentIndex + 1));
+        return u.toString();
+      })()
+    : '';
+
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=8&data=${encodeURIComponent(presenterUrl)}`;
 
   // Stopwatch timer for the speaker
   const [seconds, setSeconds] = useState<number>(0);
@@ -42,48 +48,40 @@ export const PresenterConsole: React.FC = () => {
     };
   }, [isTimerRunning]);
 
-  useEffect(() => {
-    const handleStorage = (event: StorageEvent) => {
-      if (event.key === 'ww2_intro_complete') {
-        setIsIntroComplete(event.newValue === 'true');
-      }
-    };
-
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, []);
-
   const formatTime = (totalSec: number) => {
     const mins = Math.floor(totalSec / 60);
     const secs = totalSec % 60;
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
-  const sendNavigationCommand = (action: 'next' | 'prev') => {
+  const sendNavigationCommand = (action: 'next' | 'prev' | 'goto', targetIndex?: number) => {
     fetch('/api/command', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action }),
-    }).catch(() => {
-      if (action === 'next' && currentIndex < totalSlides - 1) {
-        setCurrentIndex(currentIndex + 1);
-      }
-      if (action === 'prev' && currentIndex > 0) {
-        setCurrentIndex(currentIndex - 1);
-      }
-    });
+      body: JSON.stringify({ action, index: targetIndex }),
+    }).catch(() => {});
   };
 
   const handlePrev = () => {
     if (currentIndex > 0) {
-      sendNavigationCommand('prev');
+      const target = currentIndex - 1;
+      sendNavigationCommand('prev', target);
+      setCurrentIndex(target);
     }
   };
 
   const handleNext = () => {
-    if (currentIndex === 0 && !isIntroComplete) return;
     if (currentIndex < totalSlides - 1) {
-      sendNavigationCommand('next');
+      const target = currentIndex + 1;
+      sendNavigationCommand('next', target);
+      setCurrentIndex(target);
+    }
+  };
+
+  const handleGoto = (targetIndex: number) => {
+    if (targetIndex >= 0 && targetIndex < totalSlides) {
+      sendNavigationCommand('goto', targetIndex);
+      setCurrentIndex(targetIndex);
     }
   };
 
@@ -139,12 +137,21 @@ export const PresenterConsole: React.FC = () => {
         onTouchEnd={handleTouchEnd}
       >
         {/* Minimal Mobile Header: Current slide info & timing */}
-        <header className="shrink-0 bg-[#1b1f1c] border-b-2 border-[#3D493A] px-4 py-2.5 flex items-center justify-between gap-3 shadow-md">
-          <div className="flex items-center gap-2 min-w-0">
+        <header className="shrink-0 bg-[#1b1f1c] border-b-2 border-[#3D493A] px-4 py-2.5 flex items-center justify-between gap-2 shadow-md">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <span className="w-2 h-2 rounded-full bg-[#4ade80] animate-pulse shrink-0" title="Connected" />
-            <span className="font-typewriter text-xs font-bold text-[#D4AF37] uppercase tracking-wider shrink-0">
-              {currentIndex + 1}/{totalSlides}
-            </span>
+            <select
+              value={currentIndex}
+              onChange={(e) => handleGoto(Number(e.target.value))}
+              className="bg-[#16181A] border border-[#3D493A] text-[#D4AF37] font-typewriter text-xs font-bold px-2 py-1 rounded shrink-0 focus:outline-none focus:border-[#B89C62] cursor-pointer"
+              title="Jump to Slide"
+            >
+              {slidesData.map((s, idx) => (
+                <option key={s.id} value={idx}>
+                  {String(idx + 1).padStart(2, '0')}/{totalSlides}
+                </option>
+              ))}
+            </select>
             <span className="font-heading text-sm text-[#F5F5F0] uppercase truncate font-bold">
               {currentSlide.title}
             </span>
@@ -186,9 +193,9 @@ export const PresenterConsole: React.FC = () => {
 
           <button
             onClick={handleNext}
-            disabled={currentIndex === totalSlides - 1 || (currentIndex === 0 && !isIntroComplete)}
+            disabled={currentIndex === totalSlides - 1}
             className={`flex-1 py-4 px-4 rounded-lg font-typewriter text-sm font-bold uppercase flex items-center justify-center gap-2 border transition-all active:scale-95 shadow-lg ${
-              currentIndex === totalSlides - 1 || (currentIndex === 0 && !isIntroComplete)
+              currentIndex === totalSlides - 1
                 ? 'opacity-30 cursor-not-allowed border-[#3D493A] text-[#8c978e]'
                 : 'bg-[#8B2626] hover:bg-[#a32d2d] border-[#B89C62] text-[#F5F5F0]'
             }`}
@@ -251,7 +258,7 @@ export const PresenterConsole: React.FC = () => {
           <div className="flex items-center gap-3">
             <select
               value={currentIndex}
-              onChange={(e) => setCurrentIndex(Number(e.target.value))}
+              onChange={(e) => handleGoto(Number(e.target.value))}
               className="bg-[#202521] border border-[#3D493A] text-[#D4AF37] font-typewriter text-xs px-3 py-1.5 rounded focus:outline-none focus:border-[#B89C62]"
             >
               {slidesData.map((s, idx) => (
@@ -324,9 +331,9 @@ export const PresenterConsole: React.FC = () => {
 
                 <button
                   onClick={handleNext}
-                  disabled={currentIndex === totalSlides - 1 || (currentIndex === 0 && !isIntroComplete)}
+                  disabled={currentIndex === totalSlides - 1}
                   className={`flex-1 py-2 px-4 rounded font-typewriter text-xs uppercase flex items-center justify-center gap-1 border transition-colors ${
-                    currentIndex === totalSlides - 1 || (currentIndex === 0 && !isIntroComplete)
+                    currentIndex === totalSlides - 1
                       ? 'opacity-40 cursor-not-allowed border-[#3D493A] text-[#8c978e]'
                       : 'bg-[#8B2626] hover:bg-[#a32d2d] border-[#8B2626] text-[#F5F5F0] font-bold shadow-md'
                   }`}
@@ -364,10 +371,10 @@ export const PresenterConsole: React.FC = () => {
               </div>
               <div className="min-w-0">
                 <div className="font-typewriter text-[11px] text-[#B89C62] uppercase tracking-wider">
-                  Phone Notes
+                  Phone Notes // Slide {currentIndex + 1}
                 </div>
                 <p className="mt-1 font-body text-xs leading-relaxed text-[#d1cbbe]">
-                  Scan on the same Wi-Fi, then use Prev/Next on the phone to control the main display.
+                  Scan to open directly at Slide {currentIndex + 1}. Control main display with Prev/Next.
                 </p>
                 <p className="mt-1 break-all font-courier text-[10px] text-[#8c978e]">
                   {presenterUrl}

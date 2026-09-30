@@ -37,14 +37,19 @@ export const DeckContainer: React.FC = () => {
   const isProgressiveSlide2 = currentSlide.id === 2;
   const presenterUrl = new URL(window.location.href);
   presenterUrl.searchParams.set('mode', 'notes');
+  presenterUrl.searchParams.set('slide', String(currentIndex + 1));
 
   const handleNext = () => {
-    if (!canAdvance || isIntroExiting) return;
+    if (isIntroExiting) return;
     if (isProgressiveSlide2 && slide2RevealStep < 4) {
       setSlide2RevealStep((step) => Math.min(step + 1, 4));
       return;
     }
     if (currentIndex === 0) {
+      setIsIntroUnlocked(true);
+      try {
+        localStorage.setItem('ww2_intro_complete', 'true');
+      } catch {}
       setIsIntroExiting(true);
       window.setTimeout(() => {
         setDirection(1);
@@ -112,6 +117,7 @@ export const DeckContainer: React.FC = () => {
   const handleOpenPresenterTab = () => {
     const url = new URL(window.location.href);
     url.searchParams.set('mode', 'notes');
+    url.searchParams.set('slide', String(currentIndex + 1));
     window.open(url.toString(), '_blank', 'noopener,noreferrer');
   };
 
@@ -119,7 +125,7 @@ export const DeckContainer: React.FC = () => {
     const interval = window.setInterval(() => {
       fetch('/api/command')
         .then((response) => (response.ok ? response.json() : null))
-        .then((data: { action?: 'next' | 'prev' | null; revision?: number } | null) => {
+        .then((data: { action?: 'next' | 'prev' | 'goto' | null; index?: number; revision?: number } | null) => {
           if (!data || !Number.isFinite(data.revision)) return;
 
           const revision = Number(data.revision);
@@ -129,17 +135,20 @@ export const DeckContainer: React.FC = () => {
             return;
           }
 
-          if (revision <= commandRevisionRef.current) return;
+          if (revision === commandRevisionRef.current) return;
 
           commandRevisionRef.current = revision;
           if (data.action === 'next') handleNext();
           if (data.action === 'prev') handlePrev();
+          if (data.action === 'goto' && typeof data.index === 'number') {
+            handleSelectSlide(data.index);
+          }
         })
         .catch(() => {});
     }, 350);
 
     return () => window.clearInterval(interval);
-  }, [currentIndex, canAdvance, isIntroExiting, slide2RevealStep, totalSlides]);
+  }, [currentIndex, isIntroExiting, isProgressiveSlide2, slide2RevealStep, totalSlides]);
 
   // Keyboard navigation listener
   useEffect(() => {
