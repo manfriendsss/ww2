@@ -174,7 +174,7 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
     { year: 1975, label: 'End of the War in Vietnam' },
     { year: 1962, label: 'Cuban Missile Crisis' },
     { year: 1947, label: 'Cold War begins' },
-    { year: 1945, label: 'The end of WW2' },
+    { year: 1945, label: 'The end of World War II' },
     { year: 1939, label: 'World War II begins' },
   ];
 
@@ -583,14 +583,14 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
                 className="mt-3 sm:mt-4 h-2 w-[min(65vw,600px)] origin-center bg-[#8B2626] shadow-[0_0_22px_rgba(139,38,38,0.75)]"
               />
 
-              {/* World War 2 Grand Typewriter Title */}
+              {/* World War II Grand Typewriter Title */}
               <motion.div
                 initial={isUnlocked ? false : { opacity: 0, y: 18, filter: 'blur(8px)' }}
                 animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                 transition={{ delay: 0.8, duration: 1.0, ease: 'easeOut' }}
                 className="mt-6 font-typewriter text-3xl sm:text-5xl md:text-6xl lg:text-7xl text-[#F5F5F0] uppercase tracking-[0.2em] drop-shadow-[0_8px_28px_rgba(0,0,0,0.95)]"
               >
-                World War 2
+                World War II
               </motion.div>
 
               {/* Historical Declassified Archive Stamp Badge */}
