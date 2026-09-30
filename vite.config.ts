@@ -133,6 +133,9 @@ function presentationSyncPlugin(): Plugin {
 export default defineConfig({
   server: {
     host: '0.0.0.0',
+    watch: {
+      ignored: ['**/*.mp4', '**/dist/**'],
+    },
   },
   plugins: [presentationSyncPlugin(), react(), tailwindcss()],
 });
