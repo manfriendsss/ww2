@@ -8,11 +8,16 @@ import {
   Radio, 
   ChevronLeft, 
   ChevronRight, 
-  Clock, 
+  Clock,
+  RefreshCw,
 } from 'lucide-react';
 
 export const PresenterConsole: React.FC = () => {
-  const { currentIndex, setCurrentIndex } = useSlideSync(0);
+  const [autoFollow, setAutoFollow] = useState<boolean>(false);
+  const { currentIndex, setCurrentIndex, desktopIndex, isSynced, syncToDesktop } = useSlideSync(0, undefined, {
+    isPresenterNotes: true,
+    autoFollow,
+  });
   const totalSlides = slidesData.length;
   const currentSlide = slidesData[currentIndex] || slidesData[0];
   const nextSlide = currentIndex < totalSlides - 1 ? slidesData[currentIndex + 1] : null;
@@ -136,8 +141,8 @@ export const PresenterConsole: React.FC = () => {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Minimal Mobile Header: Current slide info & timing */}
-        <header className="shrink-0 bg-[#1b1f1c] border-b-2 border-[#3D493A] px-4 py-2.5 flex items-center justify-between gap-2 shadow-md">
+        {/* Minimal Mobile Header: Current slide info, auto-follow toggle & timing */}
+        <header className="shrink-0 bg-[#1b1f1c] border-b-2 border-[#3D493A] px-3.5 py-2.5 flex items-center justify-between gap-2 shadow-md">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <span className="w-2 h-2 rounded-full bg-[#4ade80] animate-pulse shrink-0" title="Connected" />
             <select
@@ -157,15 +162,44 @@ export const PresenterConsole: React.FC = () => {
             </span>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="font-courier text-xs text-[#B89C62] bg-[#16181A] px-2 py-0.5 rounded border border-[#3D493A]">
-              {note.timing}
-            </span>
-            <span className="font-courier text-xs text-[#8c978e] bg-[#16181A] px-2 py-0.5 rounded border border-[#3D493A]">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={() => setAutoFollow((prev) => !prev)}
+              className={`px-2 py-1 rounded border transition-colors flex items-center gap-1 font-typewriter text-[11px] font-bold ${
+                autoFollow
+                  ? 'bg-[#8B2626] border-[#D4AF37] text-[#D4AF37]'
+                  : 'bg-[#16181A] border-[#3D493A] text-[#8c978e] hover:text-[#F5F5F0]'
+              }`}
+              title={autoFollow ? 'Tự bám theo màn hình: ĐANG BẬT' : 'Chế độ đọc độc lập: ĐANG BẬT (Bấm để bật tự bám theo)'}
+            >
+              <RefreshCw size={11} className={autoFollow ? 'animate-spin' : ''} />
+              <span>{autoFollow ? 'Bám' : 'Độc lập'}</span>
+            </button>
+
+            <span className="font-courier text-xs text-[#8c978e] bg-[#16181A] px-2 py-1 rounded border border-[#3D493A]">
               {formatTime(seconds)}
             </span>
           </div>
         </header>
+
+        {/* Sync Status Banner: Displays when desktop slide differs and auto-follow is OFF */}
+        {!isSynced && !autoFollow && (
+          <div className="shrink-0 bg-[#26201b] border-b border-[#B89C62]/50 px-3.5 py-2 flex items-center justify-between gap-2 shadow-sm">
+            <div className="flex items-center gap-2 text-xs font-typewriter text-[#d1cbbe] min-w-0">
+              <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse shrink-0" />
+              <span className="truncate">
+                Máy tính: <strong className="text-[#D4AF37]">Slide {desktopIndex + 1}/{totalSlides}</strong>
+              </span>
+            </div>
+            <button
+              onClick={syncToDesktop}
+              className="px-2.5 py-0.5 bg-[#8B2626] hover:bg-[#a32d2d] active:scale-95 text-[#F5F5F0] rounded font-typewriter text-xs font-bold uppercase transition-all shrink-0 shadow flex items-center gap-1 border border-[#B89C62]/50"
+            >
+              <RefreshCw size={11} />
+              Đồng bộ
+            </button>
+          </div>
+        )}
 
         {/* Mobile Main Body: 100% Focused on Speaking Content */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-5 flex flex-col">
