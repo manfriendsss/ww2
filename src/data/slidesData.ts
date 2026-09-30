@@ -162,6 +162,44 @@ const berlinGallery = [
   }
 ];
 
+const pacificSledgeGallery = [
+  {
+    url: "/assets/history/eugene-sledge.jpg",
+    caption: "Eugene B. Sledge (1923–2001) in USMC uniform, 1st Marine Division — author of 'With the Old Breed'.",
+    source: "U.S. Marine Corps / Archival Record"
+  },
+  {
+    url: "https://commons.wikimedia.org/wiki/Special:FilePath/USS%20Yorktown%20%28CV-5%29%20is%20hit%20by%20a%20torpedo%20on%204%20June%201942.jpg",
+    caption: "Battle of Midway: USS Yorktown (CV-5) struck on the port side by an aerial torpedo, June 4, 1942.",
+    source: "U.S. Navy / Wikimedia Commons"
+  },
+  {
+    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Japanese%20aircraft%20carrier%20Hiryu%20adrift%20and%20burning%20on%205%20June%201942%20%28NH%2073065%29.jpg",
+    caption: "Battle of Midway: Japanese fleet carrier Hiryū burning and abandoned after U.S. dive-bomber attacks, June 5, 1942.",
+    source: "U.S. Navy / Wikimedia Commons"
+  },
+  {
+    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Japanese%20heavy%20cruiser%20Mikuma%20sinking%20on%206%20June%201942%20%2880-G-414422%29.jpg",
+    caption: "Battle of Midway: Japanese heavy cruiser Mikuma heavily bombed and sinking, June 6, 1942.",
+    source: "U.S. Navy / Wikimedia Commons"
+  },
+  {
+    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Douglas%20TBD-1%20Devastators%20of%20VT-6%20are%20spotted%20for%20launch%20aboard%20USS%20Enterprise%20%28CV-6%29%20on%204%20June%201942%20%2880-G-41686%29.jpg",
+    caption: "Battle of Midway: Douglas TBD-1 Devastators of VT-6 spotted on USS Enterprise (CV-6) before launching strikes.",
+    source: "U.S. Navy / Wikimedia Commons"
+  },
+  {
+    url: "/assets/history/slide5-peleliu-marines.webp",
+    caption: "Pacific Theater: U.S. Marines under deadly fire on Peleliu — the brutal crucible recorded by Eugene Sledge.",
+    source: "U.S. Marine Corps / Public Domain"
+  },
+  {
+    url: "https://commons.wikimedia.org/wiki/Special:FilePath/Explosion%20of%20the%20Japanese%20battleship%20Yamato%20on%207%20April%201945%20%2880-G-413914%29.jpg",
+    caption: "Pacific Theater: Giant Japanese battleship Yamato explodes during Operation Ten-Go, April 7, 1945.",
+    source: "U.S. Navy / Wikimedia Commons"
+  }
+];
+
 export const slidesData: SlideData[] = [
   {
     id: 1,
@@ -413,8 +451,9 @@ And on the Eastern Front, I watched Enemy at the Gates, starring Jude Law. He pl
       }
     },
     media: {
-      url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/RIAN_archive_874_Assembly_shop_of_tank-manufacturing_plant.jpg/1280px-RIAN_archive_874_Assembly_shop_of_tank-manufacturing_plant.jpg",
-      caption: "Primary historical archives reveal the unvarnished reality of industrial total war."
+      url: "/assets/history/slide6-szpilman.jpg",
+      caption: "Primary archives & soldier memoirs: Władysław Szpilman surviving occupied Warsaw and the horrors of the Holocaust.",
+      source: "Archival Record / Polskie Radio"
     },
     speakerNote: {
       timing: "05:00 – 06:00",
@@ -1034,9 +1073,11 @@ In a video game, if you make a mistake and get shot, you simply wait five second
       ]
     },
     media: {
-      url: "/assets/history/slide5-peleliu-marines.webp",
-      caption: "Marines on Peleliu: the kind of mud, heat, fear, and exhaustion Sledge described in With the Old Breed.",
-      source: "U.S. Marine Corps / Public Domain"
+      url: pacificSledgeGallery[0].url,
+      caption: pacificSledgeGallery[0].caption,
+      source: pacificSledgeGallery[0].source,
+      gallery: pacificSledgeGallery,
+      galleryGroup: "pacific-sledge"
     },
     speakerNote: {
       timing: "17:00 – 18:00",

@@ -278,7 +278,7 @@ export const DeckContainer: React.FC = () => {
             : 'max-w-7xl h-[94vh] max-h-[960px] rounded-sm'
         }`}
       >
-        <WarVideoBackdrop opacity={0.05} />
+        <WarVideoBackdrop opacity={currentSlide.id === 20 ? 0.15 : 0.05} />
 
         {/* Brass Screws at Corners */}
         <div className="absolute top-2 left-2 w-2.5 h-2.5 rounded-full bg-[#B89C62] border border-[#16181A] shadow" />

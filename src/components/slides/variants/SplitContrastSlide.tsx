@@ -345,8 +345,11 @@ export const SplitContrastSlide: React.FC<SplitContrastSlideProps> = ({ slide, p
             >
               <img
                 src={slide.media.url}
-                alt="Contrast Evidence"
+                alt={slide.media.caption || "Contrast Evidence"}
                 referrerPolicy="no-referrer"
+                onError={(event) => {
+                  event.currentTarget.src = '/assets/history/slide2-paris-1924.webp';
+                }}
                 className={`w-full h-full object-cover archival-filter archival-feather-mask ${
                   slide.id === 17 ? 'sepia contrast-125 brightness-75 saturate-[0.55]' : ''
                 }`}

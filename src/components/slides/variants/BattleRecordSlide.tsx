@@ -69,7 +69,7 @@ export const BattleRecordSlide: React.FC<BattleRecordSlideProps> = ({ slide }) =
 
           {/* Lead Headline */}
           {slide.content.lead && (
-            <div className="border-l-3 border-[#B89C62] pl-3.5 py-1.5 bg-[#1c221e]/80 rounded-r">
+            <div className="border-l-3 border-[#B89C62] pl-3.5 py-2 bg-[#1c221e]/80 rounded-r">
               <h3 className="font-heading text-lg sm:text-xl lg:text-2xl text-[#F5F5F0] tracking-wide leading-snug">
                 {slide.content.lead}
               </h3>
@@ -77,7 +77,7 @@ export const BattleRecordSlide: React.FC<BattleRecordSlideProps> = ({ slide }) =
           )}
 
           {/* Key Points */}
-          <div className="space-y-2.5 sm:space-y-3">
+          <div className="space-y-3 sm:space-y-3.5">
             {slide.content.points?.map((pt, idx) => {
               const borderAccent =
                 pt.accent === 'red'
@@ -92,10 +92,10 @@ export const BattleRecordSlide: React.FC<BattleRecordSlideProps> = ({ slide }) =
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 + idx * 0.08 }}
-                  className={`p-3 sm:p-3.5 rounded bg-[#1f2420]/90 border border-[#3D493A] ${borderAccent} hover:border-[#B89C62] transition-colors`}
+                  className={`p-3.5 sm:p-4 rounded-lg bg-[#1f2420]/90 border border-[#3D493A] ${borderAccent} hover:border-[#B89C62] transition-colors`}
                 >
-                  <h4 className="font-heading text-sm sm:text-base text-[#D4AF37] tracking-wider uppercase flex items-center gap-2">
-                    <Target size={14} className="text-[#8B2626] shrink-0" />
+                  <h4 className="font-heading text-sm sm:text-base lg:text-lg text-[#D4AF37] tracking-wider uppercase flex items-center gap-2">
+                    <Target size={15} className="text-[#8B2626] shrink-0" />
                     {pt.title}
                   </h4>
                   <p className="font-body text-xs sm:text-sm lg:text-base text-[#d1cbbe] leading-relaxed mt-1">
