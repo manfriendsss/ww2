@@ -306,9 +306,9 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
                 PRESENT ERA // YEAR 2026
               </div>
 
-              <h1 className="mx-auto text-balance text-3xl sm:text-5xl lg:text-[64px] font-extrabold text-white tracking-normal leading-[1.08] drop-shadow-lg">
+              <h1 className="mx-auto text-balance text-3xl sm:text-5xl lg:text-[64px] font-extrabold text-white tracking-normal leading-tight drop-shadow-lg pb-1">
                 If you could travel back in time,
-                <span className="mt-3 block bg-gradient-to-r from-cyan-400 via-teal-300 to-indigo-300 bg-clip-text text-transparent">
+                <span className="mt-3 block bg-gradient-to-r from-cyan-400 via-teal-300 to-indigo-300 bg-clip-text text-transparent pb-3 pt-1 leading-normal">
                   which era would you choose?
                 </span>
               </h1>
