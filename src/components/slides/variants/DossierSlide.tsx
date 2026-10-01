@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { SlideData } from '../../../types/slide';
 import { ClassifiedBadge } from '../../common/ClassifiedBadge';
-import { FileText, Quote as QuoteIcon } from 'lucide-react';
+import { FileText, Quote as QuoteIcon, Check, X } from 'lucide-react';
 
 interface DossierSlideProps {
   slide: SlideData;
@@ -44,23 +44,42 @@ export const DossierSlide: React.FC<DossierSlideProps> = ({ slide }) => {
 
         {/* 4 Mission Points Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 my-2 sm:my-4 flex-1">
-          {slide.content.points?.map((pt, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.15 + idx * 0.08 }}
-              className="p-5 sm:p-6 lg:p-7 rounded-lg bg-[#181d19] border border-[#3D493A] hover:border-[#B89C62] transition-colors relative flex flex-col justify-center"
-            >
-              <h4 className="font-heading text-base sm:text-lg lg:text-xl text-[#D4AF37] tracking-wider uppercase mb-2 flex items-center gap-2.5">
-                <span className="w-2 h-2 rounded-full bg-[#8B2626] shrink-0" />
-                {pt.title}
-              </h4>
-              <p className="font-body text-sm sm:text-base lg:text-lg text-[#d1cbbe] leading-relaxed">
-                {pt.desc}
-              </p>
-            </motion.div>
-          ))}
+          {slide.content.points?.map((pt, idx) => {
+            const isNegative = pt.accent === 'red';
+            return (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.15 + idx * 0.08 }}
+                className={`p-5 sm:p-6 lg:p-7 rounded-lg bg-[#181d19] border ${
+                  isNegative
+                    ? 'border-[#8B2626]/40 hover:border-[#8B2626]'
+                    : 'border-[#3D493A] hover:border-[#B89C62]'
+                } transition-colors relative flex flex-col justify-center`}
+              >
+                <h4
+                  className={`font-heading text-base sm:text-lg lg:text-xl tracking-wider uppercase mb-2.5 flex items-center gap-2.5 ${
+                    isNegative ? 'text-[#f5f5f0]' : 'text-[#D4AF37]'
+                  }`}
+                >
+                  {isNegative ? (
+                    <span className="p-1 rounded bg-[#8B2626]/25 border border-[#8B2626]/60 text-[#e57373] shrink-0 flex items-center justify-center shadow-sm">
+                      <X size={15} strokeWidth={2.8} />
+                    </span>
+                  ) : (
+                    <span className="p-1 rounded bg-[#B89C62]/20 border border-[#B89C62]/50 text-[#D4AF37] shrink-0 flex items-center justify-center shadow-sm">
+                      <Check size={15} strokeWidth={2.8} />
+                    </span>
+                  )}
+                  <span>{pt.title}</span>
+                </h4>
+                <p className="font-body text-sm sm:text-base lg:text-lg text-[#d1cbbe] leading-relaxed">
+                  {pt.desc}
+                </p>
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Featured Quote Block */}

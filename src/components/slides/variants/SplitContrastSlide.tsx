@@ -57,6 +57,23 @@ export const SplitContrastSlide: React.FC<SplitContrastSlideProps> = ({ slide, p
                 </p>
               )}
 
+              {visibleItems.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.15 }}
+                  className="mt-6 p-4 rounded border border-[#B89C62]/30 bg-[#16181A]/60"
+                >
+                  <p className="font-typewriter text-sm text-[#d1cbbe] leading-relaxed">
+                    Most people instinctively seek romance, classical monuments, or golden eras of art and peace.
+                  </p>
+                  <div className="mt-3 flex items-center gap-2 text-xs font-courier text-[#B89C62]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#B89C62] animate-ping" />
+                    <span>Advance to inspect the three common choices (Step 1–3)</span>
+                  </div>
+                </motion.div>
+              )}
+
               <ul className="space-y-5 mt-6">
                 <AnimatePresence>
                   {visibleItems.map((item, idx) => (
@@ -86,6 +103,41 @@ export const SplitContrastSlide: React.FC<SplitContrastSlideProps> = ({ slide, p
 
           <div className="min-h-full rounded border-2 border-[#3D493A]/45 bg-[#16181A]/30 relative overflow-hidden">
             <AnimatePresence mode="wait">
+              {step === 0 && (
+                <motion.div
+                  key="prologue-card"
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.5 }}
+                  className="h-full flex flex-col justify-between p-6 lg:p-8 rounded bg-[#202521]/95 border-2 border-[#B89C62]/40 shadow-2xl relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-28 h-28 bg-[#B89C62]/8 rounded-bl-full pointer-events-none" />
+
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#D4AF37] animate-pulse" />
+                      <span className="font-courier text-xs text-[#D4AF37] tracking-[0.22em] uppercase font-bold">
+                        SPEAKER PROLOGUE // TIME DIAL SELECTION
+                      </span>
+                    </div>
+
+                    <h4 className="font-heading text-2xl lg:text-3xl text-[#d4af37] uppercase tracking-wide mb-4">
+                      The Dilemma of the Time Machine
+                    </h4>
+
+                    <blockquote className="font-typewriter text-base lg:text-lg text-[#F5F5F0] leading-relaxed relative pl-4 border-l-2 border-[#D4AF37]/80 py-1">
+                      "Most people would choose a beautiful and romantic time. For example, they might go to ancient Egypt to see the Pyramids, visit Italy to meet Leonardo da Vinci, or walk through Paris in the 1920s. Those are wonderful choices. But if you gave me that time machine, I would choose a very different era. I would set the time to 1939 to 1945 — the Second World War."
+                    </blockquote>
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-[#3D493A]/60 flex items-center justify-between text-xs font-courier text-[#8c978e]">
+                    <span>ADVANCE TO REVEAL COMMON DESTINATIONS</span>
+                    <span className="text-[#D4AF37] font-bold">STEP 0/4</span>
+                  </div>
+                </motion.div>
+              )}
+
               {step > 0 && step < 4 && currentImage && (
                 <motion.div
                   key={currentImage.url}

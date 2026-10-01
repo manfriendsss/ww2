@@ -277,22 +277,22 @@ That is true. World War II was not as peaceful as our world today, and it was ce
       lead: "MISSION STATEMENT: TO BEAR WITNESS TO TURNING POINTS",
       points: [
         {
-          title: "❌ NOT AS A COMBATANT",
+          title: "NOT AS A COMBATANT",
           desc: "Not as a soldier to fight.",
           accent: "red"
         },
         {
-          title: "❌ NOT TO ALTER TIME",
+          title: "NOT TO ALTER TIME",
           desc: "Not to change the timeline.",
           accent: "red"
         },
         {
-          title: "✅ AS AN INVISIBLE WITNESS",
+          title: "AS AN INVISIBLE WITNESS",
           desc: "To see the darkest depths of human cruelty and the highest levels of human courage.",
           accent: "brass"
         },
         {
-          title: "✅ TO UNDERSTAND FREEDOM",
+          title: "TO UNDERSTAND FREEDOM",
           desc: "To understand the true cost of modern freedom.",
           accent: "olive"
         }
