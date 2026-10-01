@@ -17,7 +17,6 @@ interface PolandTime {
   hours: number;
   minutes: number;
   seconds: number;
-  formatted: string;
   hourAngle: number;
   minuteAngle: number;
   secondAngle: number;
@@ -30,13 +29,11 @@ const getPolandTime = (): PolandTime => {
   const hours = polandDate.getHours();
   const minutes = polandDate.getMinutes();
   const seconds = polandDate.getSeconds();
-  const pad = (n: number) => n.toString().padStart(2, '0');
 
   return {
     hours,
     minutes,
     seconds,
-    formatted: `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`,
     hourAngle: ((hours % 12) + minutes / 60 + seconds / 3600) * 30,
     minuteAngle: (minutes + seconds / 60) * 6,
     secondAngle: seconds * 6,
@@ -361,12 +358,13 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
                         );
                       })}
 
-                      {/* Hour Hand: Gold Vintage Brass (Poland actual hour) */}
+                      {/* Hour Hand: Gold Vintage Brass (Poland actual hour, reverse spin on hover) */}
                       <g
                         style={{
                           transformOrigin: '28px 28px',
-                          transform: `rotate(${polandTime.hourAngle}deg)`,
-                          transition: 'transform 0.4s ease-out',
+                          animation: isDialHovered ? 'spin-reverse 4s linear infinite' : 'none',
+                          transform: isDialHovered ? undefined : `rotate(${polandTime.hourAngle}deg)`,
+                          transition: isDialHovered ? 'none' : 'transform 0.4s ease-out',
                         }}
                       >
                         <line
@@ -380,12 +378,13 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
                         />
                       </g>
 
-                      {/* Minute Hand: Bright Cyan (Poland actual minute) */}
+                      {/* Minute Hand: Bright Cyan (Poland actual minute, reverse spin on hover) */}
                       <g
                         style={{
                           transformOrigin: '28px 28px',
-                          transform: `rotate(${polandTime.minuteAngle}deg)`,
-                          transition: 'transform 0.4s ease-out',
+                          animation: isDialHovered ? 'spin-reverse 0.7s linear infinite' : 'none',
+                          transform: isDialHovered ? undefined : `rotate(${polandTime.minuteAngle}deg)`,
+                          transition: isDialHovered ? 'none' : 'transform 0.4s ease-out',
                         }}
                       >
                         <line
@@ -399,12 +398,13 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
                         />
                       </g>
 
-                      {/* Second Hand Needle: Red needle (Poland actual second) */}
+                      {/* Second Hand Needle: Red needle (Poland actual second, reverse spin on hover) */}
                       <g
                         style={{
                           transformOrigin: '28px 28px',
-                          transform: `rotate(${polandTime.secondAngle}deg)`,
-                          transition: 'transform 0.2s cubic-bezier(0.4, 2.08, 0.55, 0.44)',
+                          animation: isDialHovered ? 'spin-reverse 0.22s linear infinite' : 'none',
+                          transform: isDialHovered ? undefined : `rotate(${polandTime.secondAngle}deg)`,
+                          transition: isDialHovered ? 'none' : 'transform 0.2s cubic-bezier(0.4, 2.08, 0.55, 0.44)',
                         }}
                       >
                         <line
@@ -431,19 +431,13 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
                     </svg>
                   </span>
 
-                  {/* === BUTTON LABELS & POLAND LIVE CLOCK DISPLAY === */}
+                  {/* === BUTTON LABELS === */}
                   <span className="flex flex-col">
-                    <span className="flex items-center gap-2">
-                      <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-cyan-200/80">
-                        Set coordinates: 1939
-                      </span>
-                      <span className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-cyan-300 bg-cyan-950/90 border border-cyan-400/40 px-2 py-0.5 rounded shadow-[0_0_12px_rgba(34,211,238,0.25)]">
-                        <Clock size={11} className="text-cyan-400" />
-                        <span className="tabular-nums">{polandTime.formatted}</span>
-                      </span>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-cyan-200/80">
+                      Set coordinates: 1939
                     </span>
-                    <span className="font-bold uppercase tracking-[0.18em] text-sm sm:text-base flex items-center gap-2">
-                      <span>Engage Time Dial</span>
+                    <span className="font-bold uppercase tracking-[0.18em] text-sm sm:text-base text-white group-hover:text-cyan-200 transition-colors">
+                      Engage Time Dial
                     </span>
                   </span>
                 </motion.button>
