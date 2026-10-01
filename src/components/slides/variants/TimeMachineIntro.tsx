@@ -13,6 +13,36 @@ interface TimeMachineIntroProps {
   onToggleFullscreen?: () => void;
 }
 
+interface PolandTime {
+  hours: number;
+  minutes: number;
+  seconds: number;
+  formatted: string;
+  hourAngle: number;
+  minuteAngle: number;
+  secondAngle: number;
+}
+
+const getPolandTime = (): PolandTime => {
+  const now = new Date();
+  const polandStr = now.toLocaleString('en-US', { timeZone: 'Europe/Warsaw' });
+  const polandDate = new Date(polandStr);
+  const hours = polandDate.getHours();
+  const minutes = polandDate.getMinutes();
+  const seconds = polandDate.getSeconds();
+  const pad = (n: number) => n.toString().padStart(2, '0');
+
+  return {
+    hours,
+    minutes,
+    seconds,
+    formatted: `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`,
+    hourAngle: ((hours % 12) + minutes / 60 + seconds / 3600) * 30,
+    minuteAngle: (minutes + seconds / 60) * 6,
+    secondAngle: seconds * 6,
+  };
+};
+
 export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
   slide: _slide,
   onAnimationComplete,
@@ -27,61 +57,18 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
   const [currentYear, setCurrentYear] = useState<number>(isUnlocked ? 1939 : 2026);
   const [rewindProgress, setRewindProgress] = useState<number>(isUnlocked ? 1 : 0);
   const [isDialHovered, setIsDialHovered] = useState<boolean>(false);
-  const [dialSeconds, setDialSeconds] = useState<number>(12 * 3600); // Initial 12:00:00
+  const [polandTime, setPolandTime] = useState<PolandTime>(getPolandTime);
   const hasCompletedRef = useRef<boolean>(isUnlocked);
   const animRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
-  const hoverAnimRef = useRef<number | null>(null);
-  const lastHoverTimeRef = useRef<number | null>(null);
 
-  // Fast hour countdown when hovering over the Time Dial button
+  // Keep Poland real-time clock synchronized every second
   useEffect(() => {
-    if (!isDialHovered) {
-      lastHoverTimeRef.current = null;
-      if (hoverAnimRef.current) {
-        cancelAnimationFrame(hoverAnimRef.current);
-        hoverAnimRef.current = null;
-      }
-      return;
-    }
-
-    // Rewinds ~3.5 hours per real second (12600 seconds/second)
-    const SECONDS_PER_REAL_SECOND = 12600;
-    const cycleSeconds = 12 * 3600;
-
-    const animateDial = (now: number) => {
-      if (lastHoverTimeRef.current === null) {
-        lastHoverTimeRef.current = now;
-      }
-      const delta = (now - lastHoverTimeRef.current) / 1000;
-      lastHoverTimeRef.current = now;
-
-      setDialSeconds((prev) => {
-        const next = prev - delta * SECONDS_PER_REAL_SECOND;
-        return ((next % cycleSeconds) + cycleSeconds) % cycleSeconds;
-      });
-
-      hoverAnimRef.current = requestAnimationFrame(animateDial);
-    };
-
-    hoverAnimRef.current = requestAnimationFrame(animateDial);
-
-    return () => {
-      if (hoverAnimRef.current) {
-        cancelAnimationFrame(hoverAnimRef.current);
-        hoverAnimRef.current = null;
-      }
-    };
-  }, [isDialHovered]);
-
-  const formatDialTime = (totalSec: number) => {
-    const s = Math.floor(totalSec) % 60;
-    const m = Math.floor(totalSec / 60) % 60;
-    let h = Math.floor(totalSec / 3600) % 12;
-    if (h === 0) h = 12;
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${pad(h)}:${pad(m)}:${pad(s)}`;
-  };
+    const timer = setInterval(() => {
+      setPolandTime(getPolandTime());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const startRewind = () => {
     setStage('priming');
@@ -160,7 +147,6 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
     return () => {
       if (animRef.current) cancelAnimationFrame(animRef.current);
       if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
-      if (hoverAnimRef.current) cancelAnimationFrame(hoverAnimRef.current);
     };
   }, []);
 
@@ -375,12 +361,11 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
                         );
                       })}
 
-                      {/* Hour Hand: Gold Vintage Brass (Rotates counter-clockwise continuously when hovered) */}
+                      {/* Hour Hand: Gold Vintage Brass (Poland actual hour) */}
                       <g
                         style={{
                           transformOrigin: '28px 28px',
-                          animation: isDialHovered ? 'spin-reverse 3.6s linear infinite' : 'none',
-                          transform: isDialHovered ? undefined : 'rotate(-45deg)',
+                          transform: `rotate(${polandTime.hourAngle}deg)`,
                           transition: 'transform 0.4s ease-out',
                         }}
                       >
@@ -395,12 +380,11 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
                         />
                       </g>
 
-                      {/* Minute Hand: Bright Cyan (Spins counter-clockwise rapidly) */}
+                      {/* Minute Hand: Bright Cyan (Poland actual minute) */}
                       <g
                         style={{
                           transformOrigin: '28px 28px',
-                          animation: isDialHovered ? 'spin-reverse 0.65s linear infinite' : 'none',
-                          transform: isDialHovered ? undefined : 'rotate(45deg)',
+                          transform: `rotate(${polandTime.minuteAngle}deg)`,
                           transition: 'transform 0.4s ease-out',
                         }}
                       >
@@ -415,13 +399,12 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
                         />
                       </g>
 
-                      {/* Second Hand Needle: High-speed sweep needle counter-clockwise */}
+                      {/* Second Hand Needle: Red needle (Poland actual second) */}
                       <g
                         style={{
                           transformOrigin: '28px 28px',
-                          animation: isDialHovered ? 'spin-reverse 0.22s linear infinite' : 'none',
-                          transform: isDialHovered ? undefined : 'rotate(120deg)',
-                          transition: 'transform 0.4s ease-out',
+                          transform: `rotate(${polandTime.secondAngle}deg)`,
+                          transition: 'transform 0.2s cubic-bezier(0.4, 2.08, 0.55, 0.44)',
                         }}
                       >
                         <line
@@ -448,27 +431,19 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
                     </svg>
                   </span>
 
-                  {/* === BUTTON LABELS & RAPID REWIND HOUR DISPLAY === */}
+                  {/* === BUTTON LABELS & POLAND LIVE CLOCK DISPLAY === */}
                   <span className="flex flex-col">
                     <span className="flex items-center gap-2">
                       <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-cyan-200/80">
-                        {isDialHovered ? 'REVERSING TIME' : 'Set coordinates: 1939'}
+                        Set coordinates: 1939
                       </span>
                       <span className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-cyan-300 bg-cyan-950/90 border border-cyan-400/40 px-2 py-0.5 rounded shadow-[0_0_12px_rgba(34,211,238,0.25)]">
-                        <Clock
-                          size={11}
-                          className={`text-cyan-400 ${isDialHovered ? 'animate-spin-reverse' : ''}`}
-                        />
-                        <span className="tabular-nums">{formatDialTime(dialSeconds)}</span>
+                        <Clock size={11} className="text-cyan-400" />
+                        <span className="tabular-nums">{polandTime.formatted}</span>
                       </span>
                     </span>
                     <span className="font-bold uppercase tracking-[0.18em] text-sm sm:text-base flex items-center gap-2">
                       <span>Engage Time Dial</span>
-                      {isDialHovered && (
-                        <span className="text-[11px] font-mono tracking-widest text-[#D4AF37] animate-pulse">
-                          ◄ REWINDING
-                        </span>
-                      )}
                     </span>
                   </span>
                 </motion.button>
