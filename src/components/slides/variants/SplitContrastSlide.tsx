@@ -25,7 +25,7 @@ export const SplitContrastSlide: React.FC<SplitContrastSlideProps> = ({ slide, p
       },
       {
         url: '/assets/history/slide2-paris-1924.webp',
-        caption: 'Paris in the Roaring Twenties: cafés, writers, and jazz-age dreams',
+        caption: 'Paris in the Roaring Twenties: The Eiffel Tower illuminated (1925)',
       },
     ];
     const currentImage = step > 0 && step < 4 ? imageStages[Math.min(step - 1, imageStages.length - 1)] : undefined;

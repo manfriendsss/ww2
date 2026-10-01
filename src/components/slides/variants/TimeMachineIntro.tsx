@@ -55,9 +55,11 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
   const [rewindProgress, setRewindProgress] = useState<number>(isUnlocked ? 1 : 0);
   const [isDialHovered, setIsDialHovered] = useState<boolean>(false);
   const [polandTime, setPolandTime] = useState<PolandTime>(getPolandTime);
+  const [hoverAngles, setHoverAngles] = useState<{ hour: number; minute: number; second: number } | null>(null);
   const hasCompletedRef = useRef<boolean>(isUnlocked);
   const animRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
+  const hoverRafRef = useRef<number | null>(null);
 
   // Keep Poland real-time clock synchronized every second
   useEffect(() => {
@@ -66,6 +68,57 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // When hovering over the button, smoothly spin the clock hands backward starting immediately from the current Poland time position
+  useEffect(() => {
+    if (!isDialHovered) {
+      if (hoverRafRef.current) {
+        cancelAnimationFrame(hoverRafRef.current);
+        hoverRafRef.current = null;
+      }
+      setHoverAngles(null);
+      return;
+    }
+
+    const pt = getPolandTime();
+    const startHour = pt.hourAngle;
+    const startMin = pt.minuteAngle;
+    const startSec = pt.secondAngle;
+
+    const SPEED_SEC = 360 / 0.45; // 1 full reverse rotation every 0.45s
+    const SPEED_MIN = 360 / 1.8;  // 1 full reverse rotation every 1.8s
+    const SPEED_HOUR = 360 / 6.0; // 1 full reverse rotation every 6.0s
+
+    let startTimestamp: number | null = null;
+
+    const animate = (timestamp: number) => {
+      if (startTimestamp === null) {
+        startTimestamp = timestamp;
+      }
+      const elapsed = (timestamp - startTimestamp) / 1000;
+
+      setHoverAngles({
+        hour: startHour - SPEED_HOUR * elapsed,
+        minute: startMin - SPEED_MIN * elapsed,
+        second: startSec - SPEED_SEC * elapsed,
+      });
+
+      hoverRafRef.current = requestAnimationFrame(animate);
+    };
+
+    hoverRafRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (hoverRafRef.current) {
+        cancelAnimationFrame(hoverRafRef.current);
+        hoverRafRef.current = null;
+      }
+    };
+  }, [isDialHovered]);
+
+  const activeHourAngle = hoverAngles ? hoverAngles.hour : polandTime.hourAngle;
+  const activeMinuteAngle = hoverAngles ? hoverAngles.minute : polandTime.minuteAngle;
+  const activeSecondAngle = hoverAngles ? hoverAngles.second : polandTime.secondAngle;
 
   const startRewind = () => {
     setStage('priming');
@@ -296,12 +349,7 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
                 </span>
               </h1>
 
-              <p className="text-base sm:text-lg text-slate-300 font-normal max-w-2xl mx-auto leading-relaxed">
-                Most would seek ancient wonders, peaceful renaissance gardens, or the romantic twenties.
-                What if we set our temporal coordinates to the most defining crucible in human memory?
-              </p>
-
-              <div className="pt-4">
+              <div className="pt-2">
                 <motion.button
                   whileHover={{ scale: 1.04, boxShadow: '0 0 34px rgba(34, 211, 238, 0.44)' }}
                   whileTap={{ scale: 0.98 }}
@@ -358,12 +406,11 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
                         );
                       })}
 
-                      {/* Hour Hand: Gold Vintage Brass (Poland actual hour, reverse spin on hover) */}
+                      {/* Hour Hand: Gold Vintage Brass (Poland actual hour, rewinds from current time on hover) */}
                       <g
                         style={{
                           transformOrigin: '28px 28px',
-                          animation: isDialHovered ? 'spin-reverse 4s linear infinite' : 'none',
-                          transform: isDialHovered ? undefined : `rotate(${polandTime.hourAngle}deg)`,
+                          transform: `rotate(${activeHourAngle}deg)`,
                           transition: isDialHovered ? 'none' : 'transform 0.4s ease-out',
                         }}
                       >
@@ -378,12 +425,11 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
                         />
                       </g>
 
-                      {/* Minute Hand: Bright Cyan (Poland actual minute, reverse spin on hover) */}
+                      {/* Minute Hand: Bright Cyan (Poland actual minute, rewinds from current time on hover) */}
                       <g
                         style={{
                           transformOrigin: '28px 28px',
-                          animation: isDialHovered ? 'spin-reverse 0.7s linear infinite' : 'none',
-                          transform: isDialHovered ? undefined : `rotate(${polandTime.minuteAngle}deg)`,
+                          transform: `rotate(${activeMinuteAngle}deg)`,
                           transition: isDialHovered ? 'none' : 'transform 0.4s ease-out',
                         }}
                       >
@@ -398,12 +444,11 @@ export const TimeMachineIntro: React.FC<TimeMachineIntroProps> = ({
                         />
                       </g>
 
-                      {/* Second Hand Needle: Red needle (Poland actual second, reverse spin on hover) */}
+                      {/* Second Hand Needle: Red needle (Poland actual second, rewinds from current time on hover) */}
                       <g
                         style={{
                           transformOrigin: '28px 28px',
-                          animation: isDialHovered ? 'spin-reverse 0.22s linear infinite' : 'none',
-                          transform: isDialHovered ? undefined : `rotate(${polandTime.secondAngle}deg)`,
+                          transform: `rotate(${activeSecondAngle}deg)`,
                           transition: isDialHovered ? 'none' : 'transform 0.2s cubic-bezier(0.4, 2.08, 0.55, 0.44)',
                         }}
                       >
